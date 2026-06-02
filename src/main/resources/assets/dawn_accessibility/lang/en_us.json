@@ -1,5 +1,7 @@
 {
   "key.categories.dawn_accessibility.accessibility": "Dawn Accessibility",
+  "key.categories.dawn_accessibility:accessibility": "Dawn Accessibility",
+  "key.categories.accessibility": "Dawn Accessibility",
   "key.dawn_accessibility.toggle_reader": "Toggle GUI reader",
   "key.dawn_accessibility.repeat_item": "Repeat current item",
   "key.dawn_accessibility.crosshair_read": "Read crosshair block",
@@ -12,6 +14,9 @@
   "screen.dawn_accessibility.section.keys": "Keybindings",
   "screen.dawn_accessibility.enabled_label": "Enable Reader",
   "screen.dawn_accessibility.rate_label": "Speech Rate",
+  "screen.dawn_accessibility.volume_label": "Volume",
+  "screen.dawn_accessibility.voice_label": "Voice",
+  "screen.dawn_accessibility.voice_default": "Default",
   "screen.dawn_accessibility.container_label": "Container Reader",
   "screen.dawn_accessibility.delay_label": "Hover Delay (ms)",
   "screen.dawn_accessibility.tooltip_detail_label": "Read Tooltip Detail",

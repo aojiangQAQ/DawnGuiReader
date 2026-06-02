@@ -1,5 +1,7 @@
 {
   "key.categories.dawn_accessibility.accessibility": "Dawn 无障碍",
+  "key.categories.dawn_accessibility:accessibility": "Dawn 无障碍",
+  "key.categories.accessibility": "Dawn 无障碍",
   "key.dawn_accessibility.toggle_reader": "开关 GUI 朗读",
   "key.dawn_accessibility.repeat_item": "重复朗读当前物品",
   "key.dawn_accessibility.crosshair_read": "朗读准星方块",
@@ -12,6 +14,9 @@
   "screen.dawn_accessibility.section.keys": "快捷键",
   "screen.dawn_accessibility.enabled_label": "启用朗读",
   "screen.dawn_accessibility.rate_label": "朗读语速",
+  "screen.dawn_accessibility.volume_label": "朗读音量",
+  "screen.dawn_accessibility.voice_label": "语音音色",
+  "screen.dawn_accessibility.voice_default": "默认",
   "screen.dawn_accessibility.container_label": "容器朗读",
   "screen.dawn_accessibility.delay_label": "悬停延迟 (ms)",
   "screen.dawn_accessibility.tooltip_detail_label": "朗读详细信息",

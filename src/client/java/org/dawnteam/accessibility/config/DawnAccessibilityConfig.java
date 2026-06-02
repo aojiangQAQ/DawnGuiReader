@@ -16,6 +16,7 @@ public final class DawnAccessibilityConfig {
 	private static final Path CONFIG_PATH = FabricLoader.getInstance().getConfigDir().resolve("dawn-accessibility.json");
 
 	private boolean enabled = true;
+	private int volume = 100;
 	private boolean containerReaderEnabled = true;
 	private int hoverDelayMs = 500;
 	private int speechRate = 0;
@@ -52,6 +53,7 @@ public final class DawnAccessibilityConfig {
 	}
 
 	private void clamp() {
+		volume = clamp(volume, 0, 100);
 		hoverDelayMs = clamp(hoverDelayMs, 100, 3000);
 		speechRate = clamp(speechRate, -10, 10);
 		hotbarDelayMs = clamp(hotbarDelayMs, 100, 3000);
@@ -65,6 +67,8 @@ public final class DawnAccessibilityConfig {
 
 	public boolean isEnabled() { return enabled; }
 	public void setEnabled(boolean v) { enabled = v; }
+	public int getVolume() { return volume; }
+	public void setVolume(int v) { volume = v; clamp(); }
 	public boolean isContainerReaderEnabled() { return containerReaderEnabled; }
 	public void setContainerReaderEnabled(boolean v) { containerReaderEnabled = v; }
 	public int getHoverDelayMs() { return hoverDelayMs; }

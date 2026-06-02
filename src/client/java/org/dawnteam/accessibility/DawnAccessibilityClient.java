@@ -125,7 +125,7 @@ public final class DawnAccessibilityClient implements ClientModInitializer {
 
 	public static void speak(String text) {
 		if (config.isEnabled() && !text.isBlank()) {
-			ttsEngine.speak(text, new TtsOptions(config.getSpeechRate(), config.getVoiceId()));
+			ttsEngine.speak(text, new TtsOptions(config.getSpeechRate(), config.getVolume(), config.getVoiceId()));
 		}
 	}
 

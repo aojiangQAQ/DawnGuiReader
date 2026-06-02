@@ -5,6 +5,7 @@ import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
 import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import org.dawnteam.accessibility.DawnAccessibilityClient;
 import org.dawnteam.accessibility.config.DawnAccessibilityConfig;
@@ -36,6 +37,22 @@ public final class DawnClothConfigScreen {
 						config.getSpeechRate(), -10, 10)
 				.setDefaultValue(0)
 				.setSaveConsumer(config::setSpeechRate)
+				.build());
+		general.addEntry(entry.startIntSlider(
+						Component.translatable("screen.dawn_accessibility.volume_label"),
+						config.getVolume(), 0, 100)
+				.setDefaultValue(100)
+				.setSaveConsumer(config::setVolume)
+				.build());
+		// Voice selector - only Default for now
+		general.addEntry(entry.startEnumSelector(
+						Component.translatable("screen.dawn_accessibility.voice_label"),
+						VoiceOption.class, VoiceOption.DEFAULT)
+				.setDefaultValue(VoiceOption.DEFAULT)
+				.setSaveConsumer(v -> {
+					config.setVoiceId(v == VoiceOption.DEFAULT ? "" : v.name());
+					config.save();
+				})
 				.build());
 
 		// === Container ===
@@ -127,6 +144,15 @@ public final class DawnClothConfigScreen {
 				.setDefaultValue(currentKey)
 				.setKeySaveConsumer(mapping::setKey)
 				.build());
+	}
+
+	public enum VoiceOption {
+		DEFAULT;
+
+		@Override
+		public String toString() {
+			return switch (this) { case DEFAULT -> "默认 (Default)"; };
+		}
 	}
 
 	public enum CrosshairMode {
