@@ -64,11 +64,12 @@ public final class HoveredItemReader {
 	private void speakTooltip() {
 		Minecraft client = Minecraft.getInstance();
 		if (client.player == null || client.level == null || currentStack.isEmpty()) return;
-		// Use non-advanced flag: only creative-mode blue text (lore/description), no item ID
+		// Use creative flag to get blue description text (mod name, category etc.)
 		Item.TooltipContext tooltipContext = Item.TooltipContext.of(client.level);
-		TooltipFlag.Default flag = new TooltipFlag.Default(false, false);
+		TooltipFlag.Default flag = new TooltipFlag.Default(false, true);
 		List<Component> lines = currentStack.getTooltipLines(tooltipContext, client.player, flag);
 		StringBuilder sb = new StringBuilder();
+		// Skip line 0 (item name), read all other lines
 		for (int i = 1; i < lines.size(); i++) {
 			String t = lines.get(i).getString().trim();
 			if (!t.isEmpty()) {
