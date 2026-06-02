@@ -1,24 +1,20 @@
 package org.dawnteam.accessibility.gui;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.network.chat.Component;
 import org.dawnteam.accessibility.DawnAccessibilityClient;
 
-import java.util.List;
 import java.util.Optional;
 
 public final class HoveredItemReader {
 	private int lastSlotId = -1;
 	private String lastItemName = "";
 	private String currentItemName = "";
-	private ItemStack currentStack = ItemStack.EMPTY;
 	private long hoverStartedAtMs;
 	private boolean spokenForCurrentHover;
-	private boolean tooltipSpoken;
+	private boolean detailSpoken;
 
 	public void update(Slot hoveredSlot) {
 		if (hoveredSlot == null || !hoveredSlot.hasItem()) {
@@ -40,10 +36,9 @@ public final class HoveredItemReader {
 			lastSlotId = slotId;
 			lastItemName = itemName;
 			currentItemName = itemName;
-			currentStack = stack;
 			hoverStartedAtMs = System.currentTimeMillis();
 			spokenForCurrentHover = false;
-			tooltipSpoken = false;
+			detailSpoken = false;
 		}
 
 		long elapsed = System.currentTimeMillis() - hoverStartedAtMs;
@@ -53,37 +48,41 @@ public final class HoveredItemReader {
 			DawnAccessibilityClient.speak(itemName);
 		}
 
-		if (!tooltipSpoken && spokenForCurrentHover
+		if (!detailSpoken && spokenForCurrentHover
 				&& cfg.isTooltipDetailEnabled()
 				&& elapsed >= cfg.getHoverDelayMs() + cfg.getTooltipDetailDelayMs()) {
-			tooltipSpoken = true;
-			speakTooltip();
+			detailSpoken = true;
+			speakDetail(stack);
 		}
 	}
 
-	private void speakTooltip() {
-		Minecraft client = Minecraft.getInstance();
-		if (client.player == null || client.level == null || currentStack.isEmpty()) return;
-		// Use creative flag to get blue description text (mod name, category etc.)
-		Item.TooltipContext tooltipContext = Item.TooltipContext.of(client.level);
-		TooltipFlag.Default flag = new TooltipFlag.Default(false, true);
-		List<Component> lines = currentStack.getTooltipLines(tooltipContext, client.player, flag);
-		StringBuilder sb = new StringBuilder();
-		// Skip line 0 (item name), read all other lines
-		for (int i = 1; i < lines.size(); i++) {
-			String t = lines.get(i).getString().trim();
-			if (!t.isEmpty()) {
-				if (sb.length() > 0) sb.append(", ");
-				sb.append(t);
+	private void speakDetail(ItemStack stack) {
+		// Get the mod name from registry namespace (the blue text in creative tooltips)
+		var id = BuiltInRegistries.ITEM.getKey(stack.getItem());
+		String namespace = id.getNamespace();
+		// Translate common namespaces to friendly names
+		String modName = switch (namespace) {
+			case "minecraft" -> "Minecraft";
+			default -> {
+				// Try to get display name from Fabric mod loader
+				try {
+					var modOpt = net.fabricmc.loader.api.FabricLoader.getInstance().getModContainer(namespace);
+					if (modOpt.isPresent()) {
+						yield modOpt.get().getMetadata().getName();
+					}
+				} catch (Exception ignored) {}
+				// Fallback: capitalize namespace
+				yield namespace.substring(0, 1).toUpperCase() + namespace.substring(1);
 			}
+		};
+		if (modName != null && !modName.isEmpty()) {
+			DawnAccessibilityClient.speak(modName);
 		}
-		if (sb.length() > 0) DawnAccessibilityClient.speak(sb.toString());
 	}
 
 	public void reset() {
 		lastSlotId = -1; lastItemName = ""; currentItemName = "";
-		currentStack = ItemStack.EMPTY;
-		hoverStartedAtMs = 0L; spokenForCurrentHover = false; tooltipSpoken = false;
+		hoverStartedAtMs = 0L; spokenForCurrentHover = false; detailSpoken = false;
 	}
 
 	public Optional<String> currentItemName() {

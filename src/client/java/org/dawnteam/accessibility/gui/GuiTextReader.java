@@ -2,8 +2,12 @@ package org.dawnteam.accessibility.gui;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.events.ContainerEventHandler;
+import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
 import org.dawnteam.accessibility.DawnAccessibilityClient;
+
+import java.util.List;
 
 public final class GuiTextReader {
 	private Screen lastScreen;
@@ -32,20 +36,11 @@ public final class GuiTextReader {
 
 		if (screen == null) return;
 
-		// Convert physical pixel mouse coords to GUI-scaled coords
 		var window = client.getWindow();
 		double mouseX = client.mouseHandler.xpos() * screen.width / window.getWidth();
 		double mouseY = client.mouseHandler.ypos() * screen.height / window.getHeight();
 
-		String foundText = null;
-		for (var child : screen.children()) {
-			if (child instanceof AbstractWidget widget && widget.visible && widget.isActive()) {
-				if (widget.isMouseOver(mouseX, mouseY)) {
-					String text = widget.getMessage().getString().trim();
-					if (!text.isEmpty()) { foundText = text; break; }
-				}
-			}
-		}
+		String foundText = findWidgetText(screen.children(), mouseX, mouseY);
 
 		if (foundText == null) {
 			if (!lastWidgetText.isEmpty()) { lastWidgetText = ""; spokenForCurrent = false; }
@@ -63,5 +58,21 @@ public final class GuiTextReader {
 			spokenForCurrent = true;
 			DawnAccessibilityClient.speak(foundText);
 		}
+	}
+
+	private String findWidgetText(List<? extends GuiEventListener> children, double mouseX, double mouseY) {
+		for (var child : children) {
+			if (child instanceof AbstractWidget widget && widget.visible && widget.isActive()
+					&& widget.isMouseOver(mouseX, mouseY)) {
+				String text = widget.getMessage().getString().trim();
+				if (!text.isEmpty()) return text;
+			}
+			// Recurse into containers (OptionsList entries, sub-screens, etc.)
+			if (child instanceof ContainerEventHandler container) {
+				String found = findWidgetText(container.children(), mouseX, mouseY);
+				if (found != null) return found;
+			}
+		}
+		return null;
 	}
 }
