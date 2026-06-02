@@ -14,6 +14,7 @@ public final class HoveredItemReader {
 	private String currentItemName = "";
 	private long hoverStartedAtMs;
 	private long nameSpokenAtMs;
+	private long estimatedSpeechEndMs;
 	private boolean spokenForCurrentHover;
 	private boolean detailSpoken;
 
@@ -39,6 +40,7 @@ public final class HoveredItemReader {
 			currentItemName = itemName;
 			hoverStartedAtMs = System.currentTimeMillis();
 			nameSpokenAtMs = 0;
+			estimatedSpeechEndMs = 0;
 			spokenForCurrentHover = false;
 			detailSpoken = false;
 		}
@@ -49,16 +51,21 @@ public final class HoveredItemReader {
 		if (!spokenForCurrentHover && elapsed >= cfg.getHoverDelayMs()) {
 			spokenForCurrentHover = true;
 			nameSpokenAtMs = now;
+			// Estimate speech duration: ~120ms per CJK char, ~80ms per Latin word
+			int rate = cfg.getSpeechRate();
+			double rateMultiplier = Math.max(0.3, 1.0 - rate * 0.08);
+			long estimatedMs = estimateSpeechDuration(itemName, rateMultiplier);
+			estimatedSpeechEndMs = now + estimatedMs;
 			DawnAccessibilityClient.speak(itemName);
 		}
 
 		if (!detailSpoken && cfg.isTooltipDetailEnabled() && spokenForCurrentHover) {
 			boolean shouldSpeak;
 			if (cfg.getTooltipDetailMode() == 1) {
-				// Sequential mode: delay starts after item name was spoken
-				shouldSpeak = now - nameSpokenAtMs >= cfg.getTooltipDetailDelayMs();
+				// Sequential: delay starts AFTER estimated speech finishes
+				shouldSpeak = now >= estimatedSpeechEndMs + cfg.getTooltipDetailDelayMs();
 			} else {
-				// Independent mode: delay starts from hover
+				// Independent: delay starts from hover
 				shouldSpeak = elapsed >= cfg.getHoverDelayMs() + cfg.getTooltipDetailDelayMs();
 			}
 			if (shouldSpeak) {
@@ -66,6 +73,25 @@ public final class HoveredItemReader {
 				speakModName(stack);
 			}
 		}
+	}
+
+	private long estimateSpeechDuration(String text, double rateMultiplier) {
+		int cjkCount = 0;
+		int wordCount = 0;
+		for (int i = 0; i < text.length(); i++) {
+			char c = text.charAt(i);
+			if (Character.UnicodeScript.of(c) == Character.UnicodeScript.HAN
+					|| Character.UnicodeScript.of(c) == Character.UnicodeScript.HANGUL
+					|| Character.UnicodeScript.of(c) == Character.UnicodeScript.HIRAGANA
+					|| Character.UnicodeScript.of(c) == Character.UnicodeScript.KATAKANA) {
+				cjkCount++;
+			} else if (Character.isWhitespace(c) || i == text.length() - 1) {
+				wordCount++;
+			}
+		}
+		if (wordCount == 0 && cjkCount == 0) wordCount = 1;
+		long ms = (long) ((cjkCount * 130 + wordCount * 80) * rateMultiplier);
+		return Math.max(200, Math.min(ms, 5000));
 	}
 
 	private void speakModName(ItemStack stack) {
@@ -88,7 +114,7 @@ public final class HoveredItemReader {
 
 	public void reset() {
 		lastSlotId = -1; lastItemName = ""; currentItemName = "";
-		hoverStartedAtMs = 0L; nameSpokenAtMs = 0L;
+		hoverStartedAtMs = 0L; nameSpokenAtMs = 0L; estimatedSpeechEndMs = 0L;
 		spokenForCurrentHover = false; detailSpoken = false;
 	}
 

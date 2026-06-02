@@ -7,19 +7,19 @@ import org.dawnteam.accessibility.DawnAccessibilityClient;
 import java.util.Optional;
 
 public final class HotbarItemReader {
+	private int lastSelectedSlot = -1;
 	private String lastItemName = "";
 	private String currentItemName = "";
 	private long hoverStartedAtMs;
 	private boolean spokenForCurrent;
 
-	public void update(ItemStack stack) {
+	public void update(ItemStack stack, int selectedSlot) {
 		var cfg = DawnAccessibilityClient.config();
 		if (!cfg.isHotbarReaderEnabled() || !cfg.isEnabled()) {
 			if (!currentItemName.isEmpty()) reset();
 			return;
 		}
 
-		// Empty hand: read "hand" translation
 		String itemName;
 		if (stack == null || stack.isEmpty()) {
 			itemName = Component.translatable("message.dawn_accessibility.empty_hand").getString();
@@ -27,7 +27,9 @@ public final class HotbarItemReader {
 			itemName = stack.getHoverName().getString();
 		}
 
-		if (!itemName.equals(lastItemName)) {
+		// Detect slot change OR item name change
+		if (selectedSlot != lastSelectedSlot || !itemName.equals(lastItemName)) {
+			lastSelectedSlot = selectedSlot;
 			lastItemName = itemName;
 			currentItemName = itemName;
 			hoverStartedAtMs = System.currentTimeMillis();
@@ -42,6 +44,7 @@ public final class HotbarItemReader {
 	}
 
 	public void reset() {
+		lastSelectedSlot = -1;
 		lastItemName = "";
 		currentItemName = "";
 		hoverStartedAtMs = 0L;
