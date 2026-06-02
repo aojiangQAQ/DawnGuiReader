@@ -1,0 +1,92 @@
+plugins {
+	id 'net.fabricmc.fabric-loom' version "${loom_version}"
+	id 'maven-publish'
+}
+
+version = project.mod_version
+group = project.maven_group
+base.archivesName = project.archives_base_name
+
+repositories {
+	maven {
+		name = 'LocalDDriveMaven'
+		url = uri('D:/local-maven')
+	}
+	maven {
+		name = 'AliyunPublic'
+		url = 'https://maven.aliyun.com/repository/public'
+	}
+	maven {
+		name = 'AliyunCentral'
+		url = 'https://maven.aliyun.com/repository/central'
+	}
+	maven {
+		name = 'MinecraftLibraries'
+		url = 'https://libraries.minecraft.net/'
+	}
+	maven {
+		name = 'Fabric'
+		url = 'https://maven.fabricmc.net/'
+	}
+	mavenCentral()
+}
+
+configurations.configureEach {
+	exclude group: "com.github.oshi", module: "oshi-core"
+	exclude group: "io.netty", module: "netty-transport-classes-epoll"
+	exclude group: "it.unimi.dsi", module: "fastutil"
+}
+
+loom {
+	splitEnvironmentSourceSets()
+
+	mods {
+		"dawn_accessibility" {
+			sourceSet sourceSets.main
+			sourceSet sourceSets.client
+		}
+	}
+}
+
+dependencies {
+	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	implementation "net.fabricmc.fabric-api:fabric-api-base:${project.fabric_api_base_version}"
+	implementation "net.fabricmc.fabric-api:fabric-lifecycle-events-v1:${project.fabric_lifecycle_events_version}"
+	implementation "net.fabricmc.fabric-api:fabric-key-mapping-api-v1:${project.fabric_key_mapping_version}"
+	clientCompileOnly files("D:/local-maven/com/github/oshi/oshi-core/6.9.0/oshi-core-6.9.0.jar")
+	clientCompileOnly files("D:/local-maven/io/netty/netty-transport-classes-epoll/4.2.7.Final/netty-transport-classes-epoll-4.2.7.Final.jar")
+	clientCompileOnly files("D:/local-maven/it/unimi/dsi/fastutil/8.5.18/fastutil-8.5.18.jar")
+}
+
+processResources {
+	inputs.property "version", project.version
+
+	filesMatching("fabric.mod.json") {
+		expand "version": project.version
+	}
+}
+
+tasks.withType(JavaCompile).configureEach {
+	it.options.encoding = "UTF-8"
+	it.options.release = 25
+}
+
+java {
+	sourceCompatibility = JavaVersion.VERSION_25
+	targetCompatibility = JavaVersion.VERSION_25
+}
+
+jar {
+	from("LICENSE") {
+		rename { "${it}_${project.name}" }
+	}
+}
+
+publishing {
+	publications {
+		create("mavenJava", MavenPublication) {
+			from components.java
+		}
+	}
+}

@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "package": "org.dawnteam.accessibility.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "client": [
+    "AbstractContainerScreenMixin",
+    "CreativeModeInventoryScreenMixin",
+    "GameNarratorAccessor",
+    "KeyMappingAccessor",
+    "PauseScreenMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

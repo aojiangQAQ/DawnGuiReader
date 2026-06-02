@@ -1,0 +1,46 @@
+pluginManagement {
+	repositories {
+		maven {
+			name = 'LocalDDriveMaven'
+			url = uri('D:/local-maven')
+		}
+		maven {
+			name = 'AliyunGradlePlugin'
+			url = 'https://maven.aliyun.com/repository/gradle-plugin'
+		}
+		maven {
+			name = 'AliyunPublic'
+			url = 'https://maven.aliyun.com/repository/public'
+		}
+		maven {
+			name = 'Fabric'
+			url = 'https://maven.fabricmc.net/'
+		}
+		mavenCentral()
+		gradlePluginPortal()
+	}
+}
+
+dependencyResolutionManagement {
+	repositories {
+		maven {
+			name = 'LocalDDriveMaven'
+			url = uri('D:/local-maven')
+		}
+		maven {
+			name = 'AliyunPublic'
+			url = 'https://maven.aliyun.com/repository/public'
+		}
+		maven {
+			name = 'AliyunCentral'
+			url = 'https://maven.aliyun.com/repository/central'
+		}
+		maven {
+			name = 'Fabric'
+			url = 'https://maven.fabricmc.net/'
+		}
+		mavenCentral()
+	}
+}
+
+rootProject.name = 'DawnGuiReader'
