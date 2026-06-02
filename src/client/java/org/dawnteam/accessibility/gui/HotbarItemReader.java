@@ -1,5 +1,6 @@
 package org.dawnteam.accessibility.gui;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import org.dawnteam.accessibility.DawnAccessibilityClient;
 
@@ -12,12 +13,20 @@ public final class HotbarItemReader {
 	private boolean spokenForCurrent;
 
 	public void update(ItemStack stack) {
-		if (stack == null || stack.isEmpty()) {
+		var cfg = DawnAccessibilityClient.config();
+		if (!cfg.isHotbarReaderEnabled() || !cfg.isEnabled()) {
 			if (!currentItemName.isEmpty()) reset();
 			return;
 		}
 
-		String itemName = stack.getHoverName().getString();
+		// Empty hand: read "hand" translation
+		String itemName;
+		if (stack == null || stack.isEmpty()) {
+			itemName = Component.translatable("message.dawn_accessibility.empty_hand").getString();
+		} else {
+			itemName = stack.getHoverName().getString();
+		}
+
 		if (!itemName.equals(lastItemName)) {
 			lastItemName = itemName;
 			currentItemName = itemName;
@@ -26,9 +35,7 @@ public final class HotbarItemReader {
 		}
 
 		if (!spokenForCurrent
-				&& DawnAccessibilityClient.config().isHotbarReaderEnabled()
-				&& DawnAccessibilityClient.config().isEnabled()
-				&& System.currentTimeMillis() - hoverStartedAtMs >= DawnAccessibilityClient.config().getHotbarDelayMs()) {
+				&& System.currentTimeMillis() - hoverStartedAtMs >= cfg.getHotbarDelayMs()) {
 			spokenForCurrent = true;
 			DawnAccessibilityClient.speak(itemName);
 		}

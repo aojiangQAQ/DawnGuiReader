@@ -16,11 +16,11 @@
   "screen.dawn_accessibility.rate_label": "Speech Rate",
   "screen.dawn_accessibility.volume_label": "Volume",
   "screen.dawn_accessibility.voice_label": "Voice",
-  "screen.dawn_accessibility.voice_default": "Default",
   "screen.dawn_accessibility.container_label": "Container Reader",
   "screen.dawn_accessibility.delay_label": "Hover Delay (ms)",
   "screen.dawn_accessibility.tooltip_detail_label": "Read Tooltip Detail",
-  "screen.dawn_accessibility.tooltip_delay_label": "Tooltip Delay (ms)",
+  "screen.dawn_accessibility.tooltip_mode_label": "Detail Mode",
+  "screen.dawn_accessibility.tooltip_delay_label": "Detail Delay (ms)",
   "screen.dawn_accessibility.hotbar_label": "Hotbar Reader",
   "screen.dawn_accessibility.hotbar_delay_label": "Hotbar Delay (ms)",
   "screen.dawn_accessibility.crosshair_mode_label": "Crosshair Mode",
@@ -32,5 +32,6 @@
   "screen.dawn_accessibility.keybind.crosshair": "Crosshair Read Key",
   "message.dawn_accessibility.reader_enabled": "Dawn GUI reader enabled",
   "message.dawn_accessibility.reader_disabled": "Dawn GUI reader disabled",
+  "message.dawn_accessibility.empty_hand": "Hand",
   "message.dawn_accessibility.voice_coming_soon": "More voices coming soon"
 }

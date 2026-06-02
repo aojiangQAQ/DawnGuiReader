@@ -13,6 +13,7 @@ public final class HoveredItemReader {
 	private String lastItemName = "";
 	private String currentItemName = "";
 	private long hoverStartedAtMs;
+	private long nameSpokenAtMs;
 	private boolean spokenForCurrentHover;
 	private boolean detailSpoken;
 
@@ -37,41 +38,46 @@ public final class HoveredItemReader {
 			lastItemName = itemName;
 			currentItemName = itemName;
 			hoverStartedAtMs = System.currentTimeMillis();
+			nameSpokenAtMs = 0;
 			spokenForCurrentHover = false;
 			detailSpoken = false;
 		}
 
-		long elapsed = System.currentTimeMillis() - hoverStartedAtMs;
+		long now = System.currentTimeMillis();
+		long elapsed = now - hoverStartedAtMs;
 
 		if (!spokenForCurrentHover && elapsed >= cfg.getHoverDelayMs()) {
 			spokenForCurrentHover = true;
+			nameSpokenAtMs = now;
 			DawnAccessibilityClient.speak(itemName);
 		}
 
-		if (!detailSpoken && spokenForCurrentHover
-				&& cfg.isTooltipDetailEnabled()
-				&& elapsed >= cfg.getHoverDelayMs() + cfg.getTooltipDetailDelayMs()) {
-			detailSpoken = true;
-			speakDetail(stack);
+		if (!detailSpoken && cfg.isTooltipDetailEnabled() && spokenForCurrentHover) {
+			boolean shouldSpeak;
+			if (cfg.getTooltipDetailMode() == 1) {
+				// Sequential mode: delay starts after item name was spoken
+				shouldSpeak = now - nameSpokenAtMs >= cfg.getTooltipDetailDelayMs();
+			} else {
+				// Independent mode: delay starts from hover
+				shouldSpeak = elapsed >= cfg.getHoverDelayMs() + cfg.getTooltipDetailDelayMs();
+			}
+			if (shouldSpeak) {
+				detailSpoken = true;
+				speakModName(stack);
+			}
 		}
 	}
 
-	private void speakDetail(ItemStack stack) {
-		// Get the mod name from registry namespace (the blue text in creative tooltips)
+	private void speakModName(ItemStack stack) {
 		var id = BuiltInRegistries.ITEM.getKey(stack.getItem());
 		String namespace = id.getNamespace();
-		// Translate common namespaces to friendly names
 		String modName = switch (namespace) {
 			case "minecraft" -> "Minecraft";
 			default -> {
-				// Try to get display name from Fabric mod loader
 				try {
 					var modOpt = net.fabricmc.loader.api.FabricLoader.getInstance().getModContainer(namespace);
-					if (modOpt.isPresent()) {
-						yield modOpt.get().getMetadata().getName();
-					}
+					if (modOpt.isPresent()) yield modOpt.get().getMetadata().getName();
 				} catch (Exception ignored) {}
-				// Fallback: capitalize namespace
 				yield namespace.substring(0, 1).toUpperCase() + namespace.substring(1);
 			}
 		};
@@ -82,7 +88,8 @@ public final class HoveredItemReader {
 
 	public void reset() {
 		lastSlotId = -1; lastItemName = ""; currentItemName = "";
-		hoverStartedAtMs = 0L; spokenForCurrentHover = false; detailSpoken = false;
+		hoverStartedAtMs = 0L; nameSpokenAtMs = 0L;
+		spokenForCurrentHover = false; detailSpoken = false;
 	}
 
 	public Optional<String> currentItemName() {

@@ -4,7 +4,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.events.ContainerEventHandler;
 import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.screens.multiplayer.ServerSelectionList;
+import net.minecraft.client.gui.screens.worldselection.WorldSelectionList;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
 import org.dawnteam.accessibility.DawnAccessibilityClient;
 
 import java.util.List;
@@ -14,10 +17,12 @@ public final class GuiTextReader {
 	private String lastWidgetText = "";
 	private long hoverStartedAtMs;
 	private boolean spokenForCurrent;
+	private double lastMouseX = -1, lastMouseY = -1;
+	private String cachedText = null;
 
 	public void update(Minecraft client) {
 		if (!DawnAccessibilityClient.config().isGuiTextReaderEnabled() || !DawnAccessibilityClient.config().isEnabled()) {
-			if (lastScreen != null) lastScreen = null;
+			if (lastScreen != null) { lastScreen = null; cachedText = null; }
 			return;
 		}
 
@@ -27,6 +32,8 @@ public final class GuiTextReader {
 			lastWidgetText = "";
 			hoverStartedAtMs = 0;
 			spokenForCurrent = false;
+			cachedText = null;
+			lastMouseX = -1; lastMouseY = -1;
 			if (screen != null && screen.getTitle() != null) {
 				String title = screen.getTitle().getString().trim();
 				if (!title.isEmpty()) DawnAccessibilityClient.speak(title);
@@ -40,7 +47,16 @@ public final class GuiTextReader {
 		double mouseX = client.mouseHandler.xpos() * screen.width / window.getWidth();
 		double mouseY = client.mouseHandler.ypos() * screen.height / window.getHeight();
 
-		String foundText = findWidgetText(screen.children(), mouseX, mouseY);
+		// Skip re-iteration if mouse hasn't moved significantly
+		String foundText;
+		if (Math.abs(mouseX - lastMouseX) < 2 && Math.abs(mouseY - lastMouseY) < 2 && cachedText != null) {
+			foundText = cachedText;
+		} else {
+			lastMouseX = mouseX;
+			lastMouseY = mouseY;
+			foundText = findWidgetText(screen.children(), mouseX, mouseY);
+			cachedText = foundText;
+		}
 
 		if (foundText == null) {
 			if (!lastWidgetText.isEmpty()) { lastWidgetText = ""; spokenForCurrent = false; }
@@ -67,7 +83,22 @@ public final class GuiTextReader {
 				String text = widget.getMessage().getString().trim();
 				if (!text.isEmpty()) return text;
 			}
-			// Recurse into containers (OptionsList entries, sub-screens, etc.)
+			// World selection list entries
+			if (child instanceof WorldSelectionList.WorldListEntry worldEntry
+					&& worldEntry.isMouseOver(mouseX, mouseY)) {
+				String name = worldEntry.getLevelName();
+				if (name != null && !name.isBlank()) return name;
+			}
+			// Server selection list entries
+			if (child instanceof ServerSelectionList.OnlineServerEntry serverEntry
+					&& serverEntry.isMouseOver(mouseX, mouseY)) {
+				var data = serverEntry.getServerData();
+				if (data != null) {
+					String name = data.name;
+					if (name != null && !name.isBlank()) return name;
+				}
+			}
+			// Recurse into containers
 			if (child instanceof ContainerEventHandler container) {
 				String found = findWidgetText(container.children(), mouseX, mouseY);
 				if (found != null) return found;

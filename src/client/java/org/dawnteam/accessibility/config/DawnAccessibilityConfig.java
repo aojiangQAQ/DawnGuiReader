@@ -15,7 +15,7 @@ public final class DawnAccessibilityConfig {
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 	private static final Path CONFIG_PATH = FabricLoader.getInstance().getConfigDir().resolve("dawn-accessibility.json");
 
-	private boolean enabled = true;
+	private boolean enabled = false;
 	private int volume = 100;
 	private boolean containerReaderEnabled = true;
 	private int hoverDelayMs = 500;
@@ -26,6 +26,7 @@ public final class DawnAccessibilityConfig {
 	private int crosshairMode = 2;
 	private int blockDelayMs = 500;
 	private boolean tooltipDetailEnabled = false;
+	private int tooltipDetailMode = 0; // 0=independent, 1=sequential
 	private int tooltipDetailDelayMs = 1000;
 	private boolean guiTextReaderEnabled = false;
 	private int guiTextDelayMs = 500;
@@ -59,6 +60,7 @@ public final class DawnAccessibilityConfig {
 		hotbarDelayMs = clamp(hotbarDelayMs, 100, 3000);
 		blockDelayMs = clamp(blockDelayMs, 100, 3000);
 		tooltipDetailDelayMs = clamp(tooltipDetailDelayMs, 200, 3000);
+		tooltipDetailMode = clamp(tooltipDetailMode, 0, 1);
 		guiTextDelayMs = clamp(guiTextDelayMs, 100, 3000);
 		crosshairMode = clamp(crosshairMode, 0, 2);
 		if (voiceId == null) voiceId = "";
@@ -87,6 +89,8 @@ public final class DawnAccessibilityConfig {
 	public void setBlockDelayMs(int v) { blockDelayMs = v; clamp(); }
 	public boolean isTooltipDetailEnabled() { return tooltipDetailEnabled; }
 	public void setTooltipDetailEnabled(boolean v) { tooltipDetailEnabled = v; }
+	public int getTooltipDetailMode() { return tooltipDetailMode; }
+	public void setTooltipDetailMode(int v) { tooltipDetailMode = v; clamp(); }
 	public int getTooltipDetailDelayMs() { return tooltipDetailDelayMs; }
 	public void setTooltipDetailDelayMs(int v) { tooltipDetailDelayMs = v; clamp(); }
 	public boolean isGuiTextReaderEnabled() { return guiTextReaderEnabled; }

@@ -5,7 +5,6 @@ import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
 import net.minecraft.client.KeyMapping;
-import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import org.dawnteam.accessibility.DawnAccessibilityClient;
 import org.dawnteam.accessibility.config.DawnAccessibilityConfig;
@@ -29,7 +28,7 @@ public final class DawnClothConfigScreen {
 		general.addEntry(entry.startBooleanToggle(
 						Component.translatable("screen.dawn_accessibility.enabled_label"),
 						config.isEnabled())
-				.setDefaultValue(true)
+				.setDefaultValue(false)
 				.setSaveConsumer(config::setEnabled)
 				.build());
 		general.addEntry(entry.startIntSlider(
@@ -44,15 +43,11 @@ public final class DawnClothConfigScreen {
 				.setDefaultValue(100)
 				.setSaveConsumer(config::setVolume)
 				.build());
-		// Voice selector - only Default for now
 		general.addEntry(entry.startEnumSelector(
 						Component.translatable("screen.dawn_accessibility.voice_label"),
 						VoiceOption.class, VoiceOption.DEFAULT)
 				.setDefaultValue(VoiceOption.DEFAULT)
-				.setSaveConsumer(v -> {
-					config.setVoiceId(v == VoiceOption.DEFAULT ? "" : v.name());
-					config.save();
-				})
+				.setSaveConsumer(v -> { config.setVoiceId(v == VoiceOption.DEFAULT ? "" : v.name()); config.save(); })
 				.build());
 
 		// === Container ===
@@ -71,6 +66,12 @@ public final class DawnClothConfigScreen {
 						config.isTooltipDetailEnabled())
 				.setDefaultValue(false)
 				.setSaveConsumer(config::setTooltipDetailEnabled)
+				.build());
+		container.addEntry(entry.startEnumSelector(
+						Component.translatable("screen.dawn_accessibility.tooltip_mode_label"),
+						TooltipDetailMode.class, TooltipDetailMode.fromInt(config.getTooltipDetailMode()))
+				.setDefaultValue(TooltipDetailMode.INDEPENDENT)
+				.setSaveConsumer(m -> config.setTooltipDetailMode(m.value))
 				.build());
 		addDelayField(container, entry, "screen.dawn_accessibility.tooltip_delay_label",
 				config.getTooltipDetailDelayMs(), 1000, 200, 3000, config::setTooltipDetailDelayMs);
@@ -148,26 +149,24 @@ public final class DawnClothConfigScreen {
 
 	public enum VoiceOption {
 		DEFAULT;
+		@Override public String toString() { return "默认 (Default)"; }
+	}
 
-		@Override
-		public String toString() {
-			return switch (this) { case DEFAULT -> "默认 (Default)"; };
+	public enum TooltipDetailMode {
+		INDEPENDENT(0), SEQUENTIAL(1);
+		public final int value;
+		TooltipDetailMode(int value) { this.value = value; }
+		public static TooltipDetailMode fromInt(int v) { return v == 1 ? SEQUENTIAL : INDEPENDENT; }
+		@Override public String toString() {
+			return switch (this) { case INDEPENDENT -> "独立"; case SEQUENTIAL -> "顺序"; };
 		}
 	}
 
 	public enum CrosshairMode {
 		OFF(0), AUTO(1), MANUAL(2);
-
 		public final int value;
 		CrosshairMode(int value) { this.value = value; }
-
-		public static CrosshairMode fromInt(int v) {
-			return switch (v) { case 0 -> OFF; case 1 -> AUTO; default -> MANUAL; };
-		}
-
-		@Override
-		public String toString() {
-			return switch (this) { case OFF -> "OFF"; case AUTO -> "AUTO"; case MANUAL -> "MANUAL"; };
-		}
+		public static CrosshairMode fromInt(int v) { return switch (v) { case 0 -> OFF; case 1 -> AUTO; default -> MANUAL; }; }
+		@Override public String toString() { return switch (this) { case OFF -> "OFF"; case AUTO -> "AUTO"; case MANUAL -> "MANUAL"; }; }
 	}
 }
