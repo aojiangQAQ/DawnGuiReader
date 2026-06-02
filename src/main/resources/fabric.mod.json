@@ -1,11 +1,11 @@
-{
+﻿{
   "schemaVersion": 1,
   "id": "dawn_accessibility",
   "version": "${version}",
-  "name": "Dawn GUI Reader",
+  "name": "DawnGuiReader",
   "description": "A client-side accessibility reader for inventory and container item names.",
   "authors": [
-    "曙光（Dawn）团队 - 鳌江"
+    "鏇欏厜锛圖awn锛夊洟闃?- 槌屾睙"
   ],
   "contact": {
     "homepage": "https://fabricmc.net/",
@@ -31,3 +31,4 @@
     "fabric-api": "*"
   }
 }
+
