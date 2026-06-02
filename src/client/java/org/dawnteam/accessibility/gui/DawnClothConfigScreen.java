@@ -47,7 +47,7 @@ public final class DawnClothConfigScreen {
 				.setDefaultValue(true)
 				.setSaveConsumer(config::setContainerReaderEnabled)
 				.build());
-		addDelayRow(container, entry, "screen.dawn_accessibility.delay_label",
+		addDelayField(container, entry, "screen.dawn_accessibility.delay_label",
 				config.getHoverDelayMs(), 500, 100, 3000, config::setHoverDelayMs);
 		container.addEntry(entry.startBooleanToggle(
 						Component.translatable("screen.dawn_accessibility.tooltip_detail_label"),
@@ -55,7 +55,7 @@ public final class DawnClothConfigScreen {
 				.setDefaultValue(false)
 				.setSaveConsumer(config::setTooltipDetailEnabled)
 				.build());
-		addDelayRow(container, entry, "screen.dawn_accessibility.tooltip_delay_label",
+		addDelayField(container, entry, "screen.dawn_accessibility.tooltip_delay_label",
 				config.getTooltipDetailDelayMs(), 1000, 200, 3000, config::setTooltipDetailDelayMs);
 
 		// === Hotbar ===
@@ -67,7 +67,7 @@ public final class DawnClothConfigScreen {
 				.setDefaultValue(true)
 				.setSaveConsumer(config::setHotbarReaderEnabled)
 				.build());
-		addDelayRow(hotbar, entry, "screen.dawn_accessibility.hotbar_delay_label",
+		addDelayField(hotbar, entry, "screen.dawn_accessibility.hotbar_delay_label",
 				config.getHotbarDelayMs(), 500, 100, 3000, config::setHotbarDelayMs);
 
 		// === Crosshair ===
@@ -79,7 +79,7 @@ public final class DawnClothConfigScreen {
 				.setDefaultValue(CrosshairMode.MANUAL)
 				.setSaveConsumer(m -> config.setCrosshairMode(m.value))
 				.build());
-		addDelayRow(crosshair, entry, "screen.dawn_accessibility.block_delay_label",
+		addDelayField(crosshair, entry, "screen.dawn_accessibility.block_delay_label",
 				config.getBlockDelayMs(), 500, 100, 3000, config::setBlockDelayMs);
 
 		// === GUI ===
@@ -91,7 +91,7 @@ public final class DawnClothConfigScreen {
 				.setDefaultValue(false)
 				.setSaveConsumer(config::setGuiTextReaderEnabled)
 				.build());
-		addDelayRow(gui, entry, "screen.dawn_accessibility.gui_delay_label",
+		addDelayField(gui, entry, "screen.dawn_accessibility.gui_delay_label",
 				config.getGuiTextDelayMs(), 500, 100, 3000, config::setGuiTextDelayMs);
 
 		// === Keybindings ===
@@ -107,16 +107,9 @@ public final class DawnClothConfigScreen {
 		return builder.build();
 	}
 
-	private static void addDelayRow(ConfigCategory category, ConfigEntryBuilder entry,
+	private static void addDelayField(ConfigCategory category, ConfigEntryBuilder entry,
 			String labelKey, int current, int defaultVal, int min, int max,
 			java.util.function.Consumer<Integer> save) {
-		// Slider for visual adjustment
-		category.addEntry(entry.startIntSlider(
-						Component.translatable(labelKey), current, min, max)
-				.setDefaultValue(defaultVal)
-				.setSaveConsumer(save)
-				.build());
-		// Input field for precise entry (same save consumer, no real-time sync with slider)
 		category.addEntry(entry.startIntField(
 						Component.translatable(labelKey), current)
 				.setDefaultValue(defaultVal)
