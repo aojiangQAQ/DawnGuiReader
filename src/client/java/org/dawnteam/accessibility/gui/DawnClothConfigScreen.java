@@ -49,6 +49,10 @@ public final class DawnClothConfigScreen {
 				.setDefaultValue(VoiceOption.DEFAULT)
 				.setSaveConsumer(v -> { config.setVoiceId(v == VoiceOption.DEFAULT ? "" : v.name()); config.save(); })
 				.build());
+		// About
+		general.addEntry(entry.startTextDescription(
+				Component.translatable("screen.dawn_accessibility.about"))
+				.build());
 
 		// === Container ===
 		ConfigCategory container = builder.getOrCreateCategory(

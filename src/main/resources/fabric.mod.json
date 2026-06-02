@@ -3,13 +3,14 @@
   "id": "dawn_accessibility",
   "version": "${version}",
   "name": "DawnGuiReader",
-  "description": "A client-side accessibility reader for inventory and container item names.",
+  "description": "A client-side accessibility reader for blind and low-vision Minecraft players. Reads container items, hotbar, crosshair blocks, and GUI text via system TTS.",
   "authors": [
-    "曙光(Dawn)团队 - 鳌江"
+    "曙光团队 - 鳌江"
   ],
   "contact": {
-    "homepage": "https://fabricmc.net/",
-    "sources": "https://github.com/aojiangQAQ/DawnGuiReader"
+    "homepage": "https://aojiang.space",
+    "sources": "https://github.com/aojiangQAQ/DawnGuiReader",
+    "issues": "https://github.com/aojiangQAQ/DawnGuiReader/issues"
   },
   "license": "MIT",
   "environment": "client",

@@ -30,6 +30,7 @@
   "screen.dawn_accessibility.keybind.toggle": "Toggle Reader Key",
   "screen.dawn_accessibility.keybind.repeat": "Repeat Item Key",
   "screen.dawn_accessibility.keybind.crosshair": "Crosshair Read Key",
+  "screen.dawn_accessibility.about": "DawnGuiReader v1.1.2 | Dawn Team - Aojiang | aojiang.space",
   "message.dawn_accessibility.reader_enabled": "Dawn GUI reader enabled",
   "message.dawn_accessibility.reader_disabled": "Dawn GUI reader disabled",
   "message.dawn_accessibility.empty_hand": "Hand",
