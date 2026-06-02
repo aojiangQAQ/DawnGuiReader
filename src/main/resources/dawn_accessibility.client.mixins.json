@@ -7,8 +7,8 @@
     "CreativeModeInventoryScreenMixin",
     "GameNarratorAccessor",
     "KeyMappingAccessor",
-    "OptionsScreenMixin",
-    "PauseScreenMixin"
+    "PauseScreenMixin",
+    "TitleScreenMixin"
   ],
   "injectors": {
     "defaultRequire": 1

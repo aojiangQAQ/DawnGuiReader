@@ -21,11 +21,11 @@
   "screen.dawn_accessibility.crosshair_mode_label": "Crosshair Mode",
   "screen.dawn_accessibility.block_delay_label": "Crosshair Delay (ms)",
   "screen.dawn_accessibility.gui_text_label": "GUI Text Reader",
+  "screen.dawn_accessibility.gui_delay_label": "GUI Text Delay (ms)",
   "screen.dawn_accessibility.keybind.toggle": "Toggle Reader Key",
   "screen.dawn_accessibility.keybind.repeat": "Repeat Item Key",
   "screen.dawn_accessibility.keybind.crosshair": "Crosshair Read Key",
   "message.dawn_accessibility.reader_enabled": "Dawn GUI reader enabled",
   "message.dawn_accessibility.reader_disabled": "Dawn GUI reader disabled",
-  "message.dawn_accessibility.voice_coming_soon": "§eMore voices coming soon",
-  "key.dawn_accessibility.accessibility": "Dawn Accessibility"
+  "message.dawn_accessibility.voice_coming_soon": "More voices coming soon"
 }

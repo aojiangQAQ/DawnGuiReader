@@ -32,12 +32,15 @@ public final class GuiTextReader {
 
 		if (screen == null) return;
 
+		// Calculate mouse position in GUI coordinates
 		double mouseX = client.mouseHandler.xpos() * screen.width / client.getWindow().getGuiScaledWidth();
 		double mouseY = client.mouseHandler.ypos() * screen.height / client.getWindow().getGuiScaledHeight();
 
+		// Find widget under mouse by checking bounds directly
 		String foundText = null;
 		for (var child : screen.children()) {
-			if (child instanceof AbstractWidget widget && widget.isHovered()) {
+			if (child instanceof AbstractWidget widget && widget.visible && widget.isActive()
+					&& widget.isMouseOver(mouseX, mouseY)) {
 				String text = widget.getMessage().getString().trim();
 				if (!text.isEmpty()) { foundText = text; break; }
 			}
@@ -54,7 +57,8 @@ public final class GuiTextReader {
 			spokenForCurrent = false;
 		}
 
-		if (!spokenForCurrent && System.currentTimeMillis() - hoverStartedAtMs >= 500) {
+		int delay = DawnAccessibilityClient.config().getGuiTextDelayMs();
+		if (!spokenForCurrent && System.currentTimeMillis() - hoverStartedAtMs >= delay) {
 			spokenForCurrent = true;
 			DawnAccessibilityClient.speak(foundText);
 		}

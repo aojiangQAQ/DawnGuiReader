@@ -27,6 +27,7 @@ public final class DawnAccessibilityConfig {
 	private boolean tooltipDetailEnabled = false;
 	private int tooltipDetailDelayMs = 1000;
 	private boolean guiTextReaderEnabled = false;
+	private int guiTextDelayMs = 500;
 
 	public static DawnAccessibilityConfig load() {
 		if (Files.exists(CONFIG_PATH)) {
@@ -56,6 +57,7 @@ public final class DawnAccessibilityConfig {
 		hotbarDelayMs = clamp(hotbarDelayMs, 100, 3000);
 		blockDelayMs = clamp(blockDelayMs, 100, 3000);
 		tooltipDetailDelayMs = clamp(tooltipDetailDelayMs, 200, 3000);
+		guiTextDelayMs = clamp(guiTextDelayMs, 100, 3000);
 		crosshairMode = clamp(crosshairMode, 0, 2);
 		if (voiceId == null) voiceId = "";
 	}
@@ -85,4 +87,6 @@ public final class DawnAccessibilityConfig {
 	public void setTooltipDetailDelayMs(int v) { tooltipDetailDelayMs = v; clamp(); }
 	public boolean isGuiTextReaderEnabled() { return guiTextReaderEnabled; }
 	public void setGuiTextReaderEnabled(boolean v) { guiTextReaderEnabled = v; }
+	public int getGuiTextDelayMs() { return guiTextDelayMs; }
+	public void setGuiTextDelayMs(int v) { guiTextDelayMs = v; clamp(); }
 }

@@ -17,7 +17,8 @@ public final class DawnClothConfigScreen {
 		ConfigBuilder builder = ConfigBuilder.create()
 				.setParentScreen(parent)
 				.setTitle(Component.translatable("screen.dawn_accessibility.title"))
-				.setSavingRunnable(config::save);
+				.setSavingRunnable(config::save)
+				.transparentBackground();
 
 		ConfigEntryBuilder entry = builder.entryBuilder();
 
@@ -105,6 +106,12 @@ public final class DawnClothConfigScreen {
 						config.isGuiTextReaderEnabled())
 				.setDefaultValue(false)
 				.setSaveConsumer(config::setGuiTextReaderEnabled)
+				.build());
+		gui.addEntry(entry.startIntSlider(
+						Component.translatable("screen.dawn_accessibility.gui_delay_label"),
+						config.getGuiTextDelayMs(), 100, 3000)
+				.setDefaultValue(500)
+				.setSaveConsumer(config::setGuiTextDelayMs)
 				.build());
 
 		// === Keybindings ===
