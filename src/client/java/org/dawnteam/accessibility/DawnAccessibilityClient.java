@@ -11,10 +11,10 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import org.dawnteam.accessibility.config.DawnAccessibilityConfig;
 import org.dawnteam.accessibility.gui.BlockTargetReader;
+import org.dawnteam.accessibility.gui.GuiTextReader;
 import org.dawnteam.accessibility.gui.HotbarItemReader;
 import org.dawnteam.accessibility.gui.HoveredItemReader;
 import org.dawnteam.accessibility.gui.HoveredTextReader;
-import org.dawnteam.accessibility.gui.LargeItemNameOverlay;
 import org.dawnteam.accessibility.mixin.KeyMappingAccessor;
 import org.dawnteam.accessibility.tts.SystemTtsEngine;
 import org.dawnteam.accessibility.tts.TtsEngine;
@@ -33,18 +33,14 @@ public final class DawnAccessibilityClient implements ClientModInitializer {
 	private static HoveredTextReader hoveredCreativeTabReader;
 	private static HotbarItemReader hotbarItemReader;
 	private static BlockTargetReader blockTargetReader;
-	private static LargeItemNameOverlay largeItemNameOverlay;
+	private static GuiTextReader guiTextReader;
 
 	private static KeyMapping toggleReaderKey;
 	private static KeyMapping repeatItemKey;
-	private static KeyMapping toggleLargeTextKey;
 	private static KeyMapping crosshairReadKey;
 	private static final KeyMapping.Category KEY_CATEGORY = KeyMapping.Category.register(Identifier.fromNamespaceAndPath(MOD_ID, "accessibility"));
 
-	private static boolean toggleWasDown;
-	private static boolean repeatWasDown;
-	private static boolean largeWasDown;
-	private static boolean crosshairWasDown;
+	private static boolean toggleWasDown, repeatWasDown, crosshairWasDown;
 
 	@Override
 	public void onInitializeClient() {
@@ -54,7 +50,7 @@ public final class DawnAccessibilityClient implements ClientModInitializer {
 		hoveredCreativeTabReader = new HoveredTextReader();
 		hotbarItemReader = new HotbarItemReader();
 		blockTargetReader = new BlockTargetReader();
-		largeItemNameOverlay = new LargeItemNameOverlay();
+		guiTextReader = new GuiTextReader();
 
 		registerKeyBindings();
 		registerTickHandler();
@@ -67,9 +63,6 @@ public final class DawnAccessibilityClient implements ClientModInitializer {
 				InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, KEY_CATEGORY));
 		repeatItemKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
 				"key.dawn_accessibility.repeat_item",
-				InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, KEY_CATEGORY));
-		toggleLargeTextKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
-				"key.dawn_accessibility.toggle_large_text",
 				InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, KEY_CATEGORY));
 		crosshairReadKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
 				"key.dawn_accessibility.crosshair_read",
@@ -92,15 +85,6 @@ public final class DawnAccessibilityClient implements ClientModInitializer {
 			if (handleKey(repeatItemKey, window, repeatWasDown)) repeatHoveredItem();
 			repeatWasDown = isKeyDown(repeatItemKey, window);
 
-			if (handleKey(toggleLargeTextKey, window, largeWasDown)) {
-				config.setLargeTextEnabled(!config.isLargeTextEnabled());
-				config.save();
-				showStatus(client, config.isLargeTextEnabled()
-						? "message.dawn_accessibility.large_enabled"
-						: "message.dawn_accessibility.large_disabled");
-			}
-			largeWasDown = isKeyDown(toggleLargeTextKey, window);
-
 			if (handleKey(crosshairReadKey, window, crosshairWasDown)) blockTargetReader.readNow();
 			crosshairWasDown = isKeyDown(crosshairReadKey, window);
 
@@ -111,6 +95,8 @@ public final class DawnAccessibilityClient implements ClientModInitializer {
 				hotbarItemReader.reset();
 				blockTargetReader.reset();
 			}
+
+			guiTextReader.update(client);
 		});
 	}
 
@@ -118,15 +104,11 @@ public final class DawnAccessibilityClient implements ClientModInitializer {
 		int key = ((KeyMappingAccessor) mapping).dawnAccessibility$getKey().getValue();
 		return key != GLFW.GLFW_KEY_UNKNOWN && InputConstants.isKeyDown(window, key);
 	}
-
 	private static boolean handleKey(KeyMapping mapping, Window window, boolean wasDown) {
 		return isKeyDown(mapping, window) && !wasDown;
 	}
-
-	private static void showStatus(Minecraft client, String translationKey) {
-		if (client.player != null) {
-			client.player.sendOverlayMessage(Component.translatable(translationKey));
-		}
+	private static void showStatus(Minecraft client, String key) {
+		if (client.player != null) client.player.sendOverlayMessage(Component.translatable(key));
 	}
 
 	public static DawnAccessibilityConfig config() { return config; }
@@ -135,7 +117,11 @@ public final class DawnAccessibilityClient implements ClientModInitializer {
 	public static HoveredTextReader hoveredCreativeTabReader() { return hoveredCreativeTabReader; }
 	public static HotbarItemReader hotbarItemReader() { return hotbarItemReader; }
 	public static BlockTargetReader blockTargetReader() { return blockTargetReader; }
-	public static LargeItemNameOverlay largeItemNameOverlay() { return largeItemNameOverlay; }
+	public static GuiTextReader guiTextReader() { return guiTextReader; }
+
+	public static KeyMapping toggleReaderKey() { return toggleReaderKey; }
+	public static KeyMapping repeatItemKey() { return repeatItemKey; }
+	public static KeyMapping crosshairReadKey() { return crosshairReadKey; }
 
 	public static void speak(String text) {
 		if (config.isEnabled() && !text.isBlank()) {

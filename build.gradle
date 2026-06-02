@@ -7,10 +7,12 @@ version = project.mod_version
 group = project.maven_group
 base.archivesName = project.archives_base_name
 
+def localMavenDir = providers.environmentVariable("LOCAL_MAVEN_DIR").getOrElse(project.findProperty("localMavenDir") ?: "local-maven")
+
 repositories {
 	maven {
 		name = 'LocalDDriveMaven'
-		url = uri('D:/local-maven')
+		url = uri(localMavenDir)
 	}
 	maven {
 		name = 'AliyunPublic'
@@ -54,9 +56,9 @@ dependencies {
 	implementation "net.fabricmc.fabric-api:fabric-api-base:${project.fabric_api_base_version}"
 	implementation "net.fabricmc.fabric-api:fabric-lifecycle-events-v1:${project.fabric_lifecycle_events_version}"
 	implementation "net.fabricmc.fabric-api:fabric-key-mapping-api-v1:${project.fabric_key_mapping_version}"
-	clientCompileOnly files("D:/local-maven/com/github/oshi/oshi-core/6.9.0/oshi-core-6.9.0.jar")
-	clientCompileOnly files("D:/local-maven/io/netty/netty-transport-classes-epoll/4.2.7.Final/netty-transport-classes-epoll-4.2.7.Final.jar")
-	clientCompileOnly files("D:/local-maven/it/unimi/dsi/fastutil/8.5.18/fastutil-8.5.18.jar")
+	clientCompileOnly files("${localMavenDir}/com/github/oshi/oshi-core/6.9.0/oshi-core-6.9.0.jar")
+	clientCompileOnly files("${localMavenDir}/io/netty/netty-transport-classes-epoll/4.2.7.Final/netty-transport-classes-epoll-4.2.7.Final.jar")
+	clientCompileOnly files("${localMavenDir}/it/unimi/dsi/fastutil/8.5.18/fastutil-8.5.18.jar")
 }
 
 processResources {

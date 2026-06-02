@@ -7,6 +7,7 @@
     "CreativeModeInventoryScreenMixin",
     "GameNarratorAccessor",
     "KeyMappingAccessor",
+    "OptionsScreenMixin",
     "PauseScreenMixin"
   ],
   "injectors": {

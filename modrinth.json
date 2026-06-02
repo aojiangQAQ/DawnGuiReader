@@ -1,0 +1,1 @@
+{"id": "bJNYg6Np", "name": "DawnGuiReader", "version": "${version}", "game_versions": ["26.1", "26.1.1", "26.1.2"], "loaders": ["fabric"], "featured": true, "file": "build/libs/dawn-gui-reader-${mod_version}.jar", "dependencies": [{"project_id": "P7dR8mSH", "dependency_type": "required"}]}
