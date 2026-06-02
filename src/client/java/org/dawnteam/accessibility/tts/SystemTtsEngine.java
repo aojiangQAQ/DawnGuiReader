@@ -69,7 +69,8 @@ public final class SystemTtsEngine implements TtsEngine {
 			Path configDir = FabricLoader.getInstance().getConfigDir();
 			Files.createDirectories(configDir);
 			Path script = configDir.resolve("dawn-tts-speak.ps1");
-			Files.writeString(script, String.join(System.lineSeparator(),
+			String nl = System.lineSeparator();
+			Files.writeString(script, String.join(nl,
 					"[Console]::InputEncoding = [System.Text.Encoding]::UTF8",
 					"[Console]::OutputEncoding = [System.Text.Encoding]::UTF8",
 					"Add-Type -AssemblyName System.Speech",
@@ -82,15 +83,15 @@ public final class SystemTtsEngine implements TtsEngine {
 					"            $s.SpeakAsyncCancelAll()",
 					"            continue",
 					"        }",
-					"        $sep = $line.IndexOf('|')",
-					"        if ($sep -lt 0) { continue }",
-					"        $sep2 = $line.IndexOf('|', $sep + 1)",
-					"        if ($sep2 -lt 0) { continue }",
-					"        $rate = [int]$line.Substring(0, $sep)",
-					"        $voice = $line.Substring($sep + 1, $sep2 - $sep - 1)",
-					"        $text = $line.Substring($sep2 + 1)",
+					"        $parts = $line.Split('|', 4)",
+					"        if ($parts.Length -lt 4) { continue }",
+					"        $rate = [int]$parts[0]",
+					"        $volume = [int]$parts[1]",
+					"        $voice = $parts[2]",
+					"        $text = $parts[3]",
 					"        $s.SpeakAsyncCancelAll()",
 					"        $s.Rate = $rate",
+					"        $s.Volume = $volume",
 					"        if ($voice.Length -gt 0) { try { $s.SelectVoice($voice) } catch {} }",
 					"        $s.SpeakAsync($text)",
 					"    }",
@@ -135,31 +136,18 @@ public final class SystemTtsEngine implements TtsEngine {
 
 	private void sendWindowsCommand(String command) {
 		synchronized (windowsLock) {
-			if (windowsProcess == null || !windowsProcess.isAlive()) {
+			if (windowsStdin == null || windowsProcess == null || !windowsProcess.isAlive()) {
 				startWindowsProcess();
 			}
-			if (windowsStdin == null) {
-				return;
-			}
-			try {
-				windowsStdin.write(command);
-				windowsStdin.newLine();
-				windowsStdin.flush();
-			} catch (IOException exception) {
-				logger.warn("TTS command failed, restarting process", exception);
-				try { windowsStdin.close(); } catch (IOException ignored) {}
-				windowsProcess.destroyForcibly();
-				windowsProcess = null;
-				windowsStdin = null;
-				startWindowsProcess();
-				if (windowsStdin != null) {
-					try {
-						windowsStdin.write(command);
-						windowsStdin.newLine();
-						windowsStdin.flush();
-					} catch (IOException retryException) {
-						logger.warn("TTS command failed after restart", retryException);
-					}
+			if (windowsStdin != null) {
+				try {
+					windowsStdin.write(command);
+					windowsStdin.newLine();
+					windowsStdin.flush();
+				} catch (IOException e) {
+					logger.warn("Failed to send TTS command", e);
+					try { windowsStdin.close(); } catch (IOException ignored) {}
+					windowsStdin = null;
 				}
 			}
 		}
@@ -167,122 +155,66 @@ public final class SystemTtsEngine implements TtsEngine {
 
 	@Override
 	public void speak(String text, TtsOptions options) {
-		if (text.isBlank()) {
-			return;
-		}
-
-		if (!available) {
-			speakWithMinecraftNarrator(text);
-			return;
-		}
-
+		if (!available) return;
 		if (platform == Platform.WINDOWS) {
-			final String cmd = options.rate() + "|" + options.voiceIdOrBlank() + "|" + text;
-			executor.execute(() -> sendWindowsCommand(cmd));
-			return;
-		}
-
-		stop();
-		final long gen = speakGeneration.incrementAndGet();
-		executor.execute(() -> {
-			if (gen != speakGeneration.get()) {
-				return;
-			}
-			try {
-				ProcessBuilder builder = new ProcessBuilder(commandForSpeech(text, options));
-				builder.redirectErrorStream(true);
-				Process process = builder.start();
-				currentProcess = process;
-				int exitCode = process.waitFor();
-				if (exitCode != 0) {
-					logger.warn("System TTS exited with code {}", exitCode);
+			// Protocol: rate|volume|voice|text
+			sendWindowsCommand(options.rate() + "|" + options.volume() + "|" + options.voiceIdOrBlank() + "|" + text);
+		} else {
+			long gen = speakGeneration.incrementAndGet();
+			executor.execute(() -> {
+				if (speakGeneration.get() != gen) return;
+				try {
+					List<String> command = commandForSpeech(text, options);
+					Process process = new ProcessBuilder(command).redirectErrorStream(true).start();
+					if (!process.waitFor(DEFAULT_TTS_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
+						process.destroyForcibly();
+					}
+				} catch (IOException | InterruptedException e) {
+					if (e instanceof InterruptedException) Thread.currentThread().interrupt();
 					speakWithMinecraftNarrator(text);
 				}
-			} catch (IOException exception) {
-				available = false;
-				availabilityMessage = exception.getMessage();
-				logger.warn("System TTS failed", exception);
-				speakWithMinecraftNarrator(text);
-			} catch (InterruptedException exception) {
-				Thread.currentThread().interrupt();
-			} finally {
-				currentProcess = null;
-			}
-		});
+			});
+		}
 	}
 
 	@Override
 	public void stop() {
 		if (platform == Platform.WINDOWS) {
-			synchronized (windowsLock) {
-				if (windowsStdin != null) {
-					try {
-						windowsStdin.write("STOP");
-						windowsStdin.newLine();
-						windowsStdin.flush();
-					} catch (IOException ignored) {}
-				}
-			}
+			sendWindowsCommand("STOP");
 		} else {
-			Process process = currentProcess;
-			if (process != null && process.isAlive()) {
-				process.destroyForcibly();
-			}
+			speakGeneration.incrementAndGet();
 		}
-		clearMinecraftNarrator();
 	}
 
 	@Override
-	public List<Voice> listVoices() {
-		return voices;
-	}
+	public List<Voice> listVoices() { return voices; }
 
 	@Override
-	public boolean isAvailable() {
-		return available || isMinecraftNarratorAvailable();
-	}
+	public boolean isAvailable() { return available; }
 
 	@Override
-	public String availabilityMessage() {
-		if (!available && isMinecraftNarratorAvailable()) {
-			return "Minecraft narrator fallback available";
-		}
-		return availabilityMessage;
-	}
+	public String availabilityMessage() { return availabilityMessage; }
 
 	private boolean checkAvailability() {
 		try {
-			Process process = new ProcessBuilder(commandForAvailability()).redirectErrorStream(true).start();
+			List<String> command = checkCommand();
+			Process process = new ProcessBuilder(command).redirectErrorStream(true).start();
 			if (!process.waitFor(probeTimeoutSeconds(), TimeUnit.SECONDS)) {
 				process.destroyForcibly();
-				availabilityMessage = "System TTS probe timed out";
 				return false;
 			}
-			String output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8).trim();
-			if (process.exitValue() == 0) {
-				return true;
-			}
-			availabilityMessage = output.isBlank() ? "System TTS probe exited with code " + process.exitValue() : output;
-			return false;
-		} catch (IOException exception) {
-			availabilityMessage = exception.getMessage();
-			return false;
-		} catch (InterruptedException exception) {
-			Thread.currentThread().interrupt();
+			return process.exitValue() == 0;
+		} catch (IOException | InterruptedException e) {
+			if (e instanceof InterruptedException) Thread.currentThread().interrupt();
 			return false;
 		}
 	}
 
-	private List<String> commandForAvailability() {
+	private List<String> checkCommand() {
 		return switch (platform) {
 			case WINDOWS -> List.of(
-					"powershell.exe",
-					"-NoLogo",
-					"-NoProfile",
-					"-NonInteractive",
-					"-ExecutionPolicy",
-					"Bypass",
-					"-Command",
+					"powershell.exe", "-NoLogo", "-NoProfile", "-NonInteractive",
+					"-ExecutionPolicy", "Bypass", "-Command",
 					"Add-Type -AssemblyName System.Speech; $s=New-Object System.Speech.Synthesis.SpeechSynthesizer; $s.Dispose()"
 			);
 			case MACOS -> List.of("say", "--version");
@@ -295,31 +227,10 @@ public final class SystemTtsEngine implements TtsEngine {
 		String voice = options.voiceIdOrBlank();
 		String rate = Integer.toString(options.rate());
 		return switch (platform) {
-			case WINDOWS -> {
-				if (windowsTtsScript == null) {
-					yield List.of("dawn-tts-unavailable", text);
-				}
-				yield List.of(
-						"powershell.exe",
-						"-NoLogo",
-						"-NoProfile",
-						"-NonInteractive",
-						"-ExecutionPolicy",
-						"Bypass",
-						"-File",
-						windowsTtsScript.toString(),
-						voice,
-						rate,
-						text
-				);
-			}
 			case MACOS -> {
 				List<String> command = new ArrayList<>();
 				command.add("say");
-				if (!voice.isBlank()) {
-					command.add("-v");
-					command.add(voice);
-				}
+				if (!voice.isBlank()) { command.add("-v"); command.add(voice); }
 				command.add("-r");
 				command.add(Integer.toString(175 + options.rate() * 25));
 				command.add(text);
@@ -330,51 +241,38 @@ public final class SystemTtsEngine implements TtsEngine {
 				command.add("spd-say");
 				command.add("-r");
 				command.add(Integer.toString(options.rate() * 10));
-				if (!voice.isBlank()) {
-					command.add("-y");
-					command.add(voice);
-				}
+				if (!voice.isBlank()) { command.add("-y"); command.add(voice); }
 				command.add(text);
 				yield command;
 			}
-			case UNKNOWN -> List.of("dawn-tts-unavailable", text);
+			default -> List.of("dawn-tts-unavailable", text);
 		};
 	}
 
 	private List<Voice> loadVoices() {
 		List<Voice> found = new ArrayList<>();
 		found.add(Voice.none());
-
 		try {
 			List<String> command = switch (platform) {
 				case WINDOWS -> List.of(
-						"powershell.exe",
-						"-NoLogo",
-						"-NoProfile",
-						"-NonInteractive",
-						"-ExecutionPolicy",
-						"Bypass",
-						"-Command",
+						"powershell.exe", "-NoLogo", "-NoProfile", "-NonInteractive",
+						"-ExecutionPolicy", "Bypass", "-Command",
 						"Add-Type -AssemblyName System.Speech; $s=New-Object System.Speech.Synthesis.SpeechSynthesizer; $s.GetInstalledVoices() | ForEach-Object { $_.VoiceInfo.Name }"
 				);
 				case MACOS -> List.of("say", "-v", "?");
 				case LINUX -> List.of("spd-say", "-L");
 				case UNKNOWN -> List.of("dawn-tts-unavailable");
 			};
-
 			Process process = new ProcessBuilder(command).redirectErrorStream(true).start();
 			if (!process.waitFor(probeTimeoutSeconds(), TimeUnit.SECONDS)) {
 				process.destroyForcibly();
 				return found;
 			}
-
 			try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
 				String line;
 				while ((line = reader.readLine()) != null) {
 					String voiceName = parseVoiceLine(line);
-					if (!voiceName.isBlank()) {
-						found.add(new Voice(voiceName, voiceName));
-					}
+					if (!voiceName.isBlank()) found.add(new Voice(voiceName, voiceName));
 				}
 			}
 		} catch (IOException exception) {
@@ -382,15 +280,12 @@ public final class SystemTtsEngine implements TtsEngine {
 		} catch (InterruptedException exception) {
 			Thread.currentThread().interrupt();
 		}
-
 		return found;
 	}
 
 	private String parseVoiceLine(String line) {
 		String trimmed = line.trim();
-		if (trimmed.isBlank()) {
-			return "";
-		}
+		if (trimmed.isBlank()) return "";
 		if (platform == Platform.MACOS) {
 			int firstSpace = trimmed.indexOf(' ');
 			return firstSpace > 0 ? trimmed.substring(0, firstSpace) : trimmed;
@@ -404,15 +299,10 @@ public final class SystemTtsEngine implements TtsEngine {
 
 	private void speakWithMinecraftNarrator(String text) {
 		Minecraft client = Minecraft.getInstance();
-		if (client == null) {
-			return;
-		}
-
+		if (client == null) return;
 		client.execute(() -> {
 			GameNarrator gameNarrator = client.getNarrator();
-			if (gameNarrator == null) {
-				return;
-			}
+			if (gameNarrator == null) return;
 			Narrator narrator = ((GameNarratorAccessor) gameNarrator).dawnAccessibility$getNarrator();
 			if (narrator.active()) {
 				narrator.clear();
@@ -421,53 +311,13 @@ public final class SystemTtsEngine implements TtsEngine {
 		});
 	}
 
-	private void clearMinecraftNarrator() {
-		Minecraft client = Minecraft.getInstance();
-		if (client == null) {
-			return;
-		}
-
-		client.execute(() -> {
-			GameNarrator gameNarrator = client.getNarrator();
-			if (gameNarrator == null) {
-				return;
-			}
-			Narrator narrator = ((GameNarratorAccessor) gameNarrator).dawnAccessibility$getNarrator();
-			if (narrator.active()) {
-				narrator.clear();
-			}
-		});
-	}
-
-	private boolean isMinecraftNarratorAvailable() {
-		try {
-			Minecraft client = Minecraft.getInstance();
-			if (client == null || client.getNarrator() == null) {
-				return false;
-			}
-			return ((GameNarratorAccessor) client.getNarrator()).dawnAccessibility$getNarrator().active();
-		} catch (RuntimeException exception) {
-			return false;
-		}
-	}
-
 	private enum Platform {
-		WINDOWS,
-		MACOS,
-		LINUX,
-		UNKNOWN;
-
+		WINDOWS, MACOS, LINUX, UNKNOWN;
 		static Platform detect() {
 			String os = System.getProperty("os.name", "").toLowerCase(Locale.ROOT);
-			if (os.contains("win")) {
-				return WINDOWS;
-			}
-			if (os.contains("mac")) {
-				return MACOS;
-			}
-			if (os.contains("linux")) {
-				return LINUX;
-			}
+			if (os.contains("win")) return WINDOWS;
+			if (os.contains("mac")) return MACOS;
+			if (os.contains("linux")) return LINUX;
 			return UNKNOWN;
 		}
 	}
