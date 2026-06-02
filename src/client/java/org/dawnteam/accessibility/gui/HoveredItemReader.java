@@ -77,7 +77,7 @@ public final class HoveredItemReader {
 
 	private long estimateSpeechDuration(String text, double rateMultiplier) {
 		int cjkCount = 0;
-		int wordCount = 0;
+		int latinCount = 0;
 		for (int i = 0; i < text.length(); i++) {
 			char c = text.charAt(i);
 			if (Character.UnicodeScript.of(c) == Character.UnicodeScript.HAN
@@ -85,13 +85,15 @@ public final class HoveredItemReader {
 					|| Character.UnicodeScript.of(c) == Character.UnicodeScript.HIRAGANA
 					|| Character.UnicodeScript.of(c) == Character.UnicodeScript.KATAKANA) {
 				cjkCount++;
-			} else if (Character.isWhitespace(c) || i == text.length() - 1) {
-				wordCount++;
+			} else if (!Character.isWhitespace(c)) {
+				latinCount++;
 			}
 		}
-		if (wordCount == 0 && cjkCount == 0) wordCount = 1;
-		long ms = (long) ((cjkCount * 130 + wordCount * 80) * rateMultiplier);
-		return Math.max(200, Math.min(ms, 5000));
+		// Base overhead for TTS startup
+		long baseMs = 300;
+		// CJK ~180ms/char, Latin ~60ms/char at normal speed
+		long contentMs = (long) ((cjkCount * 180 + latinCount * 60) * rateMultiplier);
+		return Math.max(400, Math.min(baseMs + contentMs, 6000));
 	}
 
 	private void speakModName(ItemStack stack) {
