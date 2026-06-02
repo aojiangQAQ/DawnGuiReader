@@ -1,15 +1,15 @@
-﻿{
+{
   "schemaVersion": 1,
   "id": "dawn_accessibility",
   "version": "${version}",
   "name": "DawnGuiReader",
   "description": "A client-side accessibility reader for inventory and container item names.",
   "authors": [
-    "鏇欏厜锛圖awn锛夊洟闃?- 槌屾睙"
+    "曙光(Dawn)团队 - 鳌江"
   ],
   "contact": {
     "homepage": "https://fabricmc.net/",
-    "sources": "https://github.com/DawnTeam/DawnGuiReader"
+    "sources": "https://github.com/aojiangQAQ/DawnGuiReader"
   },
   "license": "MIT",
   "environment": "client",
@@ -28,7 +28,7 @@
     "fabricloader": ">=0.19.2",
     "minecraft": ">=26.1 <26.2",
     "java": ">=25",
-    "fabric-api": "*"
+    "fabric-api": "*",
+    "cloth-config2": "*"
   }
 }
-

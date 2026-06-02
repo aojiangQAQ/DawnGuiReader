@@ -26,6 +26,12 @@ public final class HoveredItemReader {
 			return;
 		}
 
+		var cfg = DawnAccessibilityClient.config();
+		if (!cfg.isContainerReaderEnabled() || !cfg.isEnabled()) {
+			reset();
+			return;
+		}
+
 		ItemStack stack = hoveredSlot.getItem();
 		String itemName = stack.getHoverName().getString();
 		int slotId = hoveredSlot.index;
@@ -41,15 +47,13 @@ public final class HoveredItemReader {
 		}
 
 		long elapsed = System.currentTimeMillis() - hoverStartedAtMs;
-		var cfg = DawnAccessibilityClient.config();
 
-		if (!spokenForCurrentHover && cfg.isEnabled()
-				&& elapsed >= cfg.getHoverDelayMs()) {
+		if (!spokenForCurrentHover && elapsed >= cfg.getHoverDelayMs()) {
 			spokenForCurrentHover = true;
 			DawnAccessibilityClient.speak(itemName);
 		}
 
-		if (!tooltipSpoken && spokenForCurrentHover && cfg.isEnabled()
+		if (!tooltipSpoken && spokenForCurrentHover
 				&& cfg.isTooltipDetailEnabled()
 				&& elapsed >= cfg.getHoverDelayMs() + cfg.getTooltipDetailDelayMs()) {
 			tooltipSpoken = true;
@@ -60,8 +64,9 @@ public final class HoveredItemReader {
 	private void speakTooltip() {
 		Minecraft client = Minecraft.getInstance();
 		if (client.player == null || client.level == null || currentStack.isEmpty()) return;
+		// Use non-advanced flag: only creative-mode blue text (lore/description), no item ID
 		Item.TooltipContext tooltipContext = Item.TooltipContext.of(client.level);
-		TooltipFlag.Default flag = new TooltipFlag.Default(true, false);
+		TooltipFlag.Default flag = new TooltipFlag.Default(false, false);
 		List<Component> lines = currentStack.getTooltipLines(tooltipContext, client.player, flag);
 		StringBuilder sb = new StringBuilder();
 		for (int i = 1; i < lines.size(); i++) {

@@ -5,7 +5,7 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.options.OptionsScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import org.dawnteam.accessibility.gui.DawnAccessibilityOptionsScreen;
+import org.dawnteam.accessibility.gui.DawnClothConfigScreen;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -19,7 +19,7 @@ public abstract class OptionsScreenMixin extends Screen {
 	private void dawnAccessibility$addButton(CallbackInfo ci) {
 		addRenderableWidget(Button.builder(
 				Component.translatable("screen.dawn_accessibility.title"),
-				b -> Minecraft.getInstance().setScreen(new DawnAccessibilityOptionsScreen((Screen)(Object)this))
+				b -> Minecraft.getInstance().setScreen(DawnClothConfigScreen.create((Screen)(Object)this))
 		).bounds(width / 2 - 100, height / 4 + 120 + 12, 200, 20).build());
 	}
 }
