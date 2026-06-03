@@ -5,6 +5,7 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.events.ContainerEventHandler;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.multiplayer.ServerSelectionList;
+import net.minecraft.client.gui.screens.recipebook.RecipeButton;
 import net.minecraft.client.gui.screens.worldselection.WorldSelectionList;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -81,6 +82,12 @@ public final class GuiTextReader {
 			if (child instanceof AbstractWidget widget && widget.visible && widget.isActive()
 					&& widget.isMouseOver(mouseX, mouseY)) {
 				String text = widget.getMessage().getString().trim();
+				if (!text.isEmpty()) return text;
+			}
+			// Recipe book buttons
+			if (child instanceof RecipeButton recipeBtn && recipeBtn.visible && recipeBtn.isActive()
+					&& recipeBtn.isMouseOver(mouseX, mouseY)) {
+				String text = recipeBtn.getMessage().getString().trim();
 				if (!text.isEmpty()) return text;
 			}
 			// World selection list entries

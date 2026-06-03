@@ -7,10 +7,12 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.inventory.EnchantmentScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import org.dawnteam.accessibility.config.DawnAccessibilityConfig;
 import org.dawnteam.accessibility.gui.BlockTargetReader;
+import org.dawnteam.accessibility.gui.EnchantmentScreenReader;
 import org.dawnteam.accessibility.gui.GuiTextReader;
 import org.dawnteam.accessibility.gui.HotbarItemReader;
 import org.dawnteam.accessibility.gui.HoveredItemReader;
@@ -37,6 +39,7 @@ public final class DawnAccessibilityClient implements ClientModInitializer {
 	private static HotbarItemReader hotbarItemReader;
 	private static BlockTargetReader blockTargetReader;
 	private static GuiTextReader guiTextReader;
+	private static EnchantmentScreenReader enchantmentScreenReader;
 
 	private static KeyMapping toggleReaderKey;
 	private static KeyMapping repeatItemKey;
@@ -54,6 +57,7 @@ public final class DawnAccessibilityClient implements ClientModInitializer {
 		hotbarItemReader = new HotbarItemReader();
 		blockTargetReader = new BlockTargetReader();
 		guiTextReader = new GuiTextReader();
+		enchantmentScreenReader = new EnchantmentScreenReader();
 
 		registerKeyBindings();
 		registerTickHandler();
@@ -99,13 +103,20 @@ public final class DawnAccessibilityClient implements ClientModInitializer {
 				blockTargetReader.reset();
 			}
 
-			
 			// Container reading - works for ALL AbstractContainerScreen subclasses
-			if (client.screen instanceof AbstractContainerScreen containerScreen) {
+			if (client.screen instanceof EnchantmentScreen enchantScreen) {
+				hoveredItemReader.reset();
+				var w = client.getWindow();
+				int mouseX = (int) (client.mouseHandler.xpos() * client.screen.width / w.getWidth());
+				int mouseY = (int) (client.mouseHandler.ypos() * client.screen.height / w.getHeight());
+				enchantmentScreenReader.update(enchantScreen, mouseX, mouseY);
+			} else if (client.screen instanceof AbstractContainerScreen containerScreen) {
+				enchantmentScreenReader.reset();
 				Slot computed = findSlotAt(containerScreen, client);
 				hoveredItemReader.update(computed);
 			} else {
 				hoveredItemReader.reset();
+				enchantmentScreenReader.reset();
 			}
 
 			guiTextReader.update(client);
@@ -130,6 +141,7 @@ public final class DawnAccessibilityClient implements ClientModInitializer {
 	public static HotbarItemReader hotbarItemReader() { return hotbarItemReader; }
 	public static BlockTargetReader blockTargetReader() { return blockTargetReader; }
 	public static GuiTextReader guiTextReader() { return guiTextReader; }
+	public static EnchantmentScreenReader enchantmentScreenReader() { return enchantmentScreenReader; }
 
 	public static KeyMapping toggleReaderKey() { return toggleReaderKey; }
 	public static KeyMapping repeatItemKey() { return repeatItemKey; }
