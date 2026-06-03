@@ -3,6 +3,7 @@
   "package": "org.dawnteam.accessibility.mixin",
   "compatibilityLevel": "JAVA_25",
   "client": [
+    "AbstractContainerScreenAccessor",
     "AbstractContainerScreenMixin",
     "CreativeModeInventoryScreenMixin",
     "GameNarratorAccessor",

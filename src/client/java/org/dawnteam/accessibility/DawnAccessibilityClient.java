@@ -16,6 +16,9 @@ import org.dawnteam.accessibility.gui.HotbarItemReader;
 import org.dawnteam.accessibility.gui.HoveredItemReader;
 import org.dawnteam.accessibility.gui.HoveredTextReader;
 import org.dawnteam.accessibility.mixin.KeyMappingAccessor;
+import org.dawnteam.accessibility.mixin.AbstractContainerScreenAccessor;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.world.inventory.Slot;
 import org.dawnteam.accessibility.tts.SystemTtsEngine;
 import org.dawnteam.accessibility.tts.TtsEngine;
 import org.dawnteam.accessibility.tts.TtsOptions;
@@ -96,6 +99,15 @@ public final class DawnAccessibilityClient implements ClientModInitializer {
 				blockTargetReader.reset();
 			}
 
+			
+			// Container reading - works for ALL AbstractContainerScreen subclasses
+			if (client.screen instanceof AbstractContainerScreen containerScreen) {
+				Slot computed = findSlotAt(containerScreen, client);
+				hoveredItemReader.update(computed);
+			} else {
+				hoveredItemReader.reset();
+			}
+
 			guiTextReader.update(client);
 		});
 	}
@@ -146,5 +158,19 @@ public final class DawnAccessibilityClient implements ClientModInitializer {
 			blockTargetReader.currentBlockName().ifPresent(DawnAccessibilityClient::speak);
 			return;
 		}
+	}
+
+	private static Slot findSlotAt(AbstractContainerScreen screen, Minecraft client) {
+		if (screen.getMenu() == null) return null;
+		int leftPos = ((AbstractContainerScreenAccessor) screen).dawnAccessibility$getLeftPos();
+		int topPos = ((AbstractContainerScreenAccessor) screen).dawnAccessibility$getTopPos();
+		var window = client.getWindow();
+		int mouseX = (int) (client.mouseHandler.xpos() * screen.width / window.getWidth());
+		int mouseY = (int) (client.mouseHandler.ypos() * screen.height / window.getHeight());
+		for (var slot : screen.getMenu().slots) {
+			int sx = leftPos + slot.x, sy = topPos + slot.y;
+			if (mouseX >= sx && mouseX < sx + 16 && mouseY >= sy && mouseY < sy + 16) return slot;
+		}
+		return null;
 	}
 }
