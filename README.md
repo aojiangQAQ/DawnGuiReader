@@ -5,23 +5,25 @@
 ![Cloth Config](https://img.shields.io/badge/Cloth_Config-required-orange)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
-> **DawnGuiReader**（曙光 GUI 阅读器）是一个为 Minecraft Fabric 客户端设计的无障碍模组，专为盲人及低视力玩家打造。模组会在容器 GUI 悬停物品、切换物品栏、准星对准方块、或鼠标悬停界面按钮时自动朗读相关内容。支持系统 TTS 及 Minecraft 内置语音双层回退，适配 Windows / macOS / Linux 全平台。
+> **DawnGuiReader**（曙光 GUI 阅读器）是一个为 Minecraft Fabric 客户端设计的无障碍模组，专为盲人及低视力玩家打造。模组会在容器 GUI 悬浮物品、切换物品栏、准星对准方块、或鼠标悬浮界面按钮时自动朗读相关内容。支持系统 TTS 双层回退，适配 Windows / macOS / Linux 全平台。
 
 ---
 
 ## ✨ 功能亮点
 
-- **容器物品朗读** — 鼠标悬停在背包、箱子、工作台等 GUI 中的物品上，达到配置延迟后自动朗读物品名称
-- **详细信息朗读** — 可选开启，朗读物品来源模组名（如 "Minecraft"、"Create" 等蓝色文字）
-- **创造模式页签朗读** — 悬停在创造模式分类标签上时触发朗读
-- **物品栏切换朗读** — 切换快捷栏时自动朗读手持物品名称，独立延迟设置
+- **容器物品朗读** — 鼠标悬浮在背包、箱子、工作台、熔炉、铁砧、附魔台、村民交易等 GUI 中的物品上，达到配置延迟后自动朗读物品名称
+- **详细信息朗读** — 可选开启，朗读物品来源模组名（如 "Minecraft"、"Create" 等蓝色文字），支持独立/顺序两种模式
+- **附魔台朗读** — 朗读附魔台中各附魔选项的等级与描述
+- **创造模式标签朗读** — 悬浮在创造模式分类标签上时触发朗读
+- **物品栏切换朗读** — 切换快捷栏时自动朗读手持物品名称，独立延迟设置，空手时朗读"手"
 - **准星方块朗读** — 三种模式：关闭 / 自动（延迟朗读）/ 手动（快捷键即时朗读）
-- **界面文字朗读** — 朗读鼠标悬停的 GUI 按钮文本，支持递归搜索嵌套控件（如设置界面内的选项）
-- **音量控制** — 独立音量滑块（0-100），不干扰游戏音量
+- **界面文字朗读** — 朗读鼠标悬浮的 GUI 按钮文本，支持递归搜索嵌套控件（如设置界面内的选项）
+- **音量控制** — 独立音量滑块（0–100），不干扰游戏音量
 - **音色选择** — 预留音色切换接口，当前仅提供默认音色
 - **双层 TTS 引擎** — 优先使用系统语音（Windows PowerShell / macOS say / Linux spd-say），不可用时自动回退到 Minecraft 内置 Narrator
 - **持久化进程** — Windows 下采用持久化 PowerShell 进程 + stdin 管道通信，朗读延迟从数秒降至毫秒级
-- **Cloth Config 设置界面** — 分标签页的现代设置 UI，支持滑块、输入框、开关、枚举选择、快捷键绑定
+- **Cloth Config 设置界面** — 分标签页的现代设置 UI，支持输入框、开关、枚举选择、快捷键绑定
+- **默认关闭** — 模组默认不启用朗读，插入其他整合包不影响正常玩家
 
 ---
 
@@ -41,7 +43,7 @@
 1. 安装 [Fabric Loader](https://fabricmc.net/use/installer/) 0.19.2+
 2. 安装 [Fabric API](https://modrinth.com/mod/fabric-api) 到 `mods/` 目录
 3. 安装 [Cloth Config](https://modrinth.com/mod/cloth-config) 到 `mods/` 目录
-4. 将 `DawnGuiReader-1.1.0.jar` 复制到 `mods/` 目录
+4. 将 `DawnGuiReader-1.2.0.jar` 复制到 `mods/` 目录
 5. 启动游戏，模组自动生效
 
 ---
@@ -53,19 +55,19 @@
 | 按键 | 功能 |
 |------|------|
 | 开关 GUI 朗读 | 切换朗读总开关 |
-| 重复朗读当前物品 | 有 GUI 时重复鼠标悬停物，无 GUI 时重复手持物 |
+| 重复朗读当前物品 | 有 GUI 时重复鼠标悬浮物，无 GUI 时重复手持物 |
 | 朗读准星方块 | 即时朗读准星所指方块（需准星模式非关闭） |
 
 ---
 
-## 🔧 设置界面
+## ⚙️ 设置界面
 
 在**主界面**左下角或**暂停菜单**中点击 **"Dawn 无障碍"** 进入设置，使用 Cloth Config 分标签页布局：
 
 ### 通用
 | 设置项 | 范围 | 默认值 |
 |--------|------|--------|
-| 启用朗读 | ON/OFF | ON |
+| 启用朗读 | ON/OFF | OFF |
 | 朗读语速 | -10 ~ 10 | 0 |
 | 朗读音量 | 0 ~ 100 | 100 |
 | 语音音色 | 枚举选择 | 默认 |
@@ -74,8 +76,9 @@
 | 设置项 | 范围 | 默认值 |
 |--------|------|--------|
 | 容器朗读 | ON/OFF | ON |
-| 悬停延迟 | 100 ~ 3000ms | 500ms |
+| 悬浮延迟 | 100 ~ 3000ms | 500ms |
 | 朗读详细信息 | ON/OFF | OFF |
+| 详细信息模式 | 独立 / 顺序 | 独立 |
 | 详细信息延迟 | 200 ~ 3000ms | 1000ms |
 
 ### 物品栏
@@ -87,7 +90,7 @@
 ### 准星
 | 设置项 | 范围 | 默认值 |
 |--------|------|--------|
-| 准星模式 | OFF/AUTO/MANUAL | MANUAL |
+| 准星模式 | OFF / AUTO / MANUAL | MANUAL |
 | 准星延迟 | 100 ~ 3000ms | 500ms |
 
 ### 界面朗读
@@ -101,7 +104,7 @@
 
 ---
 
-## 🌐 TTS 引擎
+## 🔊 TTS 引擎
 
 | 平台 | 主引擎 | 回退方案 |
 |------|--------|---------|
@@ -113,7 +116,7 @@ Windows 下首次运行会在 `.minecraft/config/` 目录生成 `dawn-tts-speak.
 
 ---
 
-## 🛠 本地构建
+## 🔨 本地构建
 
 确保使用 **JDK 25** 和 **Gradle 9.4+**：
 
@@ -127,12 +130,12 @@ cd DawnGuiReader
 # 或使用 D 盘缓存构建（离线，更快）
 .\build-d-drive.ps1
 
-# 生成 build/libs/DawnGuiReader-1.1.0.jar
+# 生成 build/libs/DawnGuiReader-1.2.0.jar
 ```
 
 ---
 
-## 🔧 开发环境
+## 🛠 开发环境
 
 - **Java:** 25
 - **Build:** Gradle 9.4+ (Fabric Loom 1.16.3)
@@ -143,7 +146,7 @@ cd DawnGuiReader
 
 ---
 
-## 📂 目录结构
+## 📁 目录结构
 
 ```
 DawnGuiReader/
@@ -157,12 +160,14 @@ DawnGuiReader/
     │   ├── config/DawnAccessibilityConfig.java     # JSON 配置
     │   ├── gui/
     │   │   ├── DawnClothConfigScreen.java          # Cloth Config 设置界面
-    │   │   ├── HoveredItemReader.java              # 容器物品悬停 + 模组名朗读
-    │   │   ├── HoveredTextReader.java              # 创造页签悬停
+    │   │   ├── EnchantmentScreenReader.java        # 附魔台朗读
+    │   │   ├── HoveredItemReader.java              # 容器物品悬浮 + 模组名朗读
+    │   │   ├── HoveredTextReader.java              # 创造标签悬浮
     │   │   ├── HotbarItemReader.java               # 物品栏切换
     │   │   ├── BlockTargetReader.java              # 准星方块
     │   │   └── GuiTextReader.java                  # 界面文字朗读
     │   ├── mixin/
+    │   │   ├── AbstractContainerScreenAccessor.java
     │   │   ├── AbstractContainerScreenMixin.java
     │   │   ├── CreativeModeInventoryScreenMixin.java
     │   │   ├── GameNarratorAccessor.java
@@ -186,7 +191,7 @@ DawnGuiReader/
 
 ## 🤝 贡献
 
-欢迎 Issue / PR！
+欢迎 Issue / PR：
 
 1. Fork 本仓库
 2. 创建新分支: `git checkout -b feature/awesome`
@@ -202,7 +207,8 @@ DawnGuiReader 使用 **MIT License**，详见 [LICENSE](LICENSE)。
 
 ---
 
-> **制作团队**：曙光（Dawn）团队
-> **制作人**：鳌江
-> **版本**：1.1.0
-> **适用客户端**：Minecraft 26.1.x Fabric 客户端
+> **制作团队**：曙光（Dawn）团队  
+> **制作人**：鳌江  
+> **版本**：1.2.0  
+> **适用客户端**：Minecraft 26.1.x Fabric 客户端  
+> **主页**：[aojiang.space](https://aojiang.space)
