@@ -20,7 +20,7 @@ public abstract class TitleScreenMixin extends Screen {
 		// Place button at bottom-left to avoid overlapping vanilla buttons
 		addRenderableWidget(Button.builder(
 				Component.translatable("screen.dawn_accessibility.title"),
-				b -> Minecraft.getInstance().setScreen(DawnClothConfigScreen.create((Screen)(Object)this))
+				b -> Minecraft.getInstance().setScreenAndShow(DawnClothConfigScreen.create((Screen)(Object)this))
 		).bounds(4, height - 24, 120, 20).build());
 	}
 }
