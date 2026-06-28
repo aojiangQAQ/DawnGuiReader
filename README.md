@@ -1,6 +1,6 @@
 # DawnGuiReader — 曙光无障碍阅读模组
 
-![Minecraft](https://img.shields.io/badge/Minecraft-26.1-green)
+![Minecraft](https://img.shields.io/badge/Minecraft-26.1--26.2-green)
 ![Fabric](https://img.shields.io/badge/Fabric-0.19.2-blue)
 ![Cloth Config](https://img.shields.io/badge/Cloth_Config-required-orange)
 ![License](https://img.shields.io/badge/license-MIT-blue)
@@ -31,10 +31,10 @@
 
 | 前置 | 版本要求 | 说明 |
 |------|---------|------|
-| **Minecraft** | 26.1.x | |
+| **Minecraft** | 26.1.x / 26.2.x | |
 | **Fabric Loader** | 0.19.2+ | |
 | **Fabric API** | 包含 api-base / lifecycle-events / key-mapping-api | |
-| **Cloth Config** | 26.1.154+ | **必选前置**，提供设置界面 |
+| **Cloth Config** | 对应 Minecraft 版本 | **必选前置**，提供设置界面 |
 
 ---
 
@@ -142,7 +142,7 @@ cd DawnGuiReader
 - **Minecraft:** 26.1.2
 - **Fabric Loader:** 0.19.2
 - **Fabric API:** 0.150.0+26.1.2
-- **Cloth Config:** 26.1.154+fabric
+- **Cloth Config:** 26.2.155（构建依赖；运行时请安装对应 Minecraft 版本）
 
 ---
 
@@ -210,5 +210,5 @@ DawnGuiReader 使用 **MIT License**，详见 [LICENSE](LICENSE)。
 > **制作团队**：曙光（Dawn）团队  
 > **制作人**：鳌江  
 > **版本**：1.2.0  
-> **适用客户端**：Minecraft 26.1.x Fabric 客户端  
+> **适用客户端**：Minecraft 26.1.x / 26.2.x Fabric 客户端  
 > **主页**：[aojiang.space](https://aojiang.space)
