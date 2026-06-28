@@ -11,6 +11,7 @@ import net.minecraft.client.gui.screens.inventory.EnchantmentScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import org.dawnteam.accessibility.config.DawnAccessibilityConfig;
+import org.dawnteam.accessibility.compat.MinecraftScreenCompat;
 import org.dawnteam.accessibility.gui.BlockTargetReader;
 import org.dawnteam.accessibility.gui.EnchantmentScreenReader;
 import org.dawnteam.accessibility.gui.GuiTextReader;
@@ -104,13 +105,14 @@ public final class DawnAccessibilityClient implements ClientModInitializer {
 			}
 
 			// Container reading - works for ALL AbstractContainerScreen subclasses
-			if (client.screen instanceof EnchantmentScreen enchantScreen) {
+			var screen = MinecraftScreenCompat.currentScreen(client);
+			if (screen instanceof EnchantmentScreen enchantScreen) {
 				hoveredItemReader.reset();
 				var w = client.getWindow();
-				int mouseX = (int) (client.mouseHandler.xpos() * client.screen.width / w.getWidth());
-				int mouseY = (int) (client.mouseHandler.ypos() * client.screen.height / w.getHeight());
+				int mouseX = (int) (client.mouseHandler.xpos() * screen.width / w.getWidth());
+				int mouseY = (int) (client.mouseHandler.ypos() * screen.height / w.getHeight());
 				enchantmentScreenReader.update(enchantScreen, mouseX, mouseY);
-			} else if (client.screen instanceof AbstractContainerScreen containerScreen) {
+			} else if (screen instanceof AbstractContainerScreen containerScreen) {
 				enchantmentScreenReader.reset();
 				Slot computed = findSlotAt(containerScreen, client);
 				hoveredItemReader.update(computed);

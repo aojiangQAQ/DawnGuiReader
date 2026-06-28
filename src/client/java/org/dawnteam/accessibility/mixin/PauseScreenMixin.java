@@ -21,7 +21,7 @@ public abstract class PauseScreenMixin extends Screen {
 	private void dawnAccessibility$addOptionsButton(CallbackInfo ci) {
 		addRenderableWidget(Button.builder(
 						Component.translatable("screen.dawn_accessibility.title"),
-						button -> Minecraft.getInstance().setScreen(DawnClothConfigScreen.create((Screen) (Object) this))
+						button -> Minecraft.getInstance().setScreenAndShow(DawnClothConfigScreen.create((Screen) (Object) this))
 				)
 				.bounds(width / 2 - 102, height / 4 + 144, 204, 20)
 				.build());

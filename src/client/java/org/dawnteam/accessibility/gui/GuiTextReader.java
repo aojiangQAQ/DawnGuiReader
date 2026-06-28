@@ -10,6 +10,7 @@ import net.minecraft.client.gui.screens.worldselection.WorldSelectionList;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import org.dawnteam.accessibility.DawnAccessibilityClient;
+import org.dawnteam.accessibility.compat.MinecraftScreenCompat;
 
 import java.util.List;
 
@@ -27,7 +28,7 @@ public final class GuiTextReader {
 			return;
 		}
 
-		Screen screen = client.screen;
+		Screen screen = MinecraftScreenCompat.currentScreen(client);
 		if (screen != lastScreen) {
 			lastScreen = screen;
 			lastWidgetText = "";

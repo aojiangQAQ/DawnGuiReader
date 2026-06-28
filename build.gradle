@@ -30,13 +30,16 @@ repositories {
 		name = 'Fabric'
 		url = 'https://maven.fabricmc.net/'
 	}
+	maven {
+		name = 'Shedaniel'
+		url = 'https://maven.shedaniel.me/'
+	}
 	mavenCentral()
 }
 
 configurations.configureEach {
 	exclude group: "com.github.oshi", module: "oshi-core"
 	exclude group: "io.netty", module: "netty-transport-classes-epoll"
-	exclude group: "it.unimi.dsi", module: "fastutil"
 }
 
 loom {
