@@ -96,7 +96,7 @@ public final class DawnAccessibilityClient implements ClientModInitializer {
 			crosshairWasDown = isKeyDown(crosshairReadKey, window);
 
 			if (client.player != null) {
-				hotbarItemReader.update(client.player.getMainHandItem(), client.player.getInventory().getSelectedSlot());
+				hotbarItemReader.update(client.player.getMainHandItem(), client.player.getInventory().selected);
 				blockTargetReader.update();
 			} else {
 				hotbarItemReader.reset();
