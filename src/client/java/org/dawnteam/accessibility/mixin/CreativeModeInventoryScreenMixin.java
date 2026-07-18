@@ -1,6 +1,6 @@
 package org.dawnteam.accessibility.mixin;
 
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.world.item.CreativeModeTab;
 import org.dawnteam.accessibility.DawnAccessibilityClient;
@@ -16,21 +16,21 @@ public abstract class CreativeModeInventoryScreenMixin {
 	@Unique
 	private boolean dawnAccessibility$hoveredCreativeTabThisFrame;
 
-	@Inject(method = "extractRenderState", at = @At("HEAD"))
-	private void dawnAccessibility$beginCreativeTabHoverFrame(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
+	@Inject(method = "render", at = @At("HEAD"))
+	private void dawnAccessibility$beginCreativeTabHoverFrame(GuiGraphics graphics, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
 		dawnAccessibility$hoveredCreativeTabThisFrame = false;
 	}
 
 	@Inject(method = "checkTabHovering", at = @At("RETURN"))
-	private void dawnAccessibility$readHoveredCreativeTab(GuiGraphicsExtractor graphics, CreativeModeTab tab, int mouseX, int mouseY, CallbackInfoReturnable<Boolean> cir) {
+	private void dawnAccessibility$readHoveredCreativeTab(GuiGraphics graphics, CreativeModeTab tab, int mouseX, int mouseY, CallbackInfoReturnable<Boolean> cir) {
 		if (Boolean.TRUE.equals(cir.getReturnValue())) {
 			dawnAccessibility$hoveredCreativeTabThisFrame = true;
 			DawnAccessibilityClient.hoveredCreativeTabReader().update(tab.getDisplayName().getString());
 		}
 	}
 
-	@Inject(method = "extractRenderState", at = @At("TAIL"))
-	private void dawnAccessibility$endCreativeTabHoverFrame(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
+	@Inject(method = "render", at = @At("TAIL"))
+	private void dawnAccessibility$endCreativeTabHoverFrame(GuiGraphics graphics, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
 		if (!dawnAccessibility$hoveredCreativeTabThisFrame) {
 			DawnAccessibilityClient.hoveredCreativeTabReader().reset();
 		}
