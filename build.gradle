@@ -1,5 +1,5 @@
 plugins {
-	id 'net.fabricmc.fabric-loom' version "${loom_version}"
+	id 'fabric-loom' version "${loom_version}"
 	id 'maven-publish'
 	id 'com.modrinth.minotaur' version '2.9.0'
 }
@@ -8,13 +8,7 @@ version = project.mod_version
 group = project.maven_group
 base.archivesName = project.archives_base_name
 
-def localMavenDir = providers.environmentVariable("LOCAL_MAVEN_DIR").getOrElse(project.findProperty("localMavenDir") ?: "local-maven")
-
 repositories {
-	maven {
-		name = 'LocalDDriveMaven'
-		url = uri(localMavenDir)
-	}
 	maven {
 		name = 'AliyunPublic'
 		url = 'https://maven.aliyun.com/repository/public'
@@ -38,11 +32,6 @@ repositories {
 	mavenCentral()
 }
 
-configurations.configureEach {
-	exclude group: "com.github.oshi", module: "oshi-core"
-	exclude group: "io.netty", module: "netty-transport-classes-epoll"
-}
-
 loom {
 	splitEnvironmentSourceSets()
 
@@ -56,14 +45,10 @@ loom {
 
 dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
-	implementation "net.fabricmc.fabric-api:fabric-api-base:${project.fabric_api_base_version}"
-	implementation "net.fabricmc.fabric-api:fabric-lifecycle-events-v1:${project.fabric_lifecycle_events_version}"
-	implementation "net.fabricmc.fabric-api:fabric-key-mapping-api-v1:${project.fabric_key_mapping_version}"
-	implementation "me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}"
-	clientCompileOnly files("${localMavenDir}/com/github/oshi/oshi-core/6.9.0/oshi-core-6.9.0.jar")
-	clientCompileOnly files("${localMavenDir}/io/netty/netty-transport-classes-epoll/4.2.7.Final/netty-transport-classes-epoll-4.2.7.Final.jar")
-	clientCompileOnly files("${localMavenDir}/it/unimi/dsi/fastutil/8.5.18/fastutil-8.5.18.jar")
+	mappings loom.officialMojangMappings()
+	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+	modImplementation "me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}"
 }
 
 processResources {
@@ -76,12 +61,12 @@ processResources {
 
 tasks.withType(JavaCompile).configureEach {
 	it.options.encoding = "UTF-8"
-	it.options.release = 25
+	it.options.release = Integer.parseInt(project.java_version)
 }
 
 java {
-	sourceCompatibility = JavaVersion.VERSION_25
-	targetCompatibility = JavaVersion.VERSION_25
+	sourceCompatibility = JavaVersion.toVersion(project.java_version)
+	targetCompatibility = JavaVersion.toVersion(project.java_version)
 }
 
 jar {
@@ -104,15 +89,12 @@ modrinth {
 	versionNumber = project.mod_version
 	versionName = "DawnGuiReader v${project.mod_version}"
 	versionType = 'release'
-	uploadFile = tasks.named('jar')
-	gameVersions = ['26.1', '26.1.1', '26.1.2', '26.2']
+	uploadFile = tasks.named('remapJar')
+	gameVersions = ['1.21.8']
 	loaders = ['fabric']
 	changelog = '''
-- Added Minecraft 26.2 support while retaining Minecraft 26.1.x compatibility.
-- Improved TTS threading and fallback behavior.
-- Optimized GUI reading and disabled-state tick overhead.
-- Added bilingual documentation and a new mod icon.
-- Thanks to @S-H-Go for the Minecraft 26.2 compatibility contribution.
+- Added a dedicated Minecraft 1.21.8 Fabric build.
+- Includes container, hotbar, crosshair, GUI, and enchanting-table reading.
 '''.stripIndent().trim()
 	dependencies {
 		required.project 'fabric-api'
