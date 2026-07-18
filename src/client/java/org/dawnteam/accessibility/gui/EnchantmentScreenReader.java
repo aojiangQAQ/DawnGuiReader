@@ -82,8 +82,8 @@ public final class EnchantmentScreenReader {
 		Minecraft client = Minecraft.getInstance();
 		if (client.level == null) return null;
 		try {
-			var lookup = client.level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
-			var holder = lookup.get(clue);
+			var registry = client.level.registryAccess().registryOrThrow(Registries.ENCHANTMENT);
+			var holder = registry.getHolder(clue);
 			if (holder.isPresent()) {
 				Component fullName = Enchantment.getFullname(holder.get(), level);
 				if (fullName != null) {
