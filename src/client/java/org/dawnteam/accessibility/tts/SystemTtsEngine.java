@@ -4,7 +4,6 @@ import com.mojang.text2speech.Narrator;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.Minecraft;
-import net.minecraft.sounds.SoundSource;
 import org.dawnteam.accessibility.mixin.GameNarratorAccessor;
 import org.slf4j.Logger;
 
@@ -328,7 +327,7 @@ public final class SystemTtsEngine implements TtsEngine {
 			Narrator narrator = ((GameNarratorAccessor) gameNarrator).dawnAccessibility$getNarrator();
 			if (narrator.active()) {
 				narrator.clear();
-				narrator.say(text, true, client.options.getFinalSoundSourceVolume(SoundSource.VOICE));
+				narrator.say(text, true);
 			}
 		});
 	}
