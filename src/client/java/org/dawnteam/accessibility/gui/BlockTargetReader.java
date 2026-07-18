@@ -18,6 +18,11 @@ public final class BlockTargetReader {
 
 	public void update() {
 		Minecraft client = Minecraft.getInstance();
+		var config = DawnAccessibilityClient.config();
+		if (!config.isEnabled() || config.getCrosshairMode() == 0) {
+			if (!currentBlockName.isEmpty()) reset();
+			return;
+		}
 		if (client.player == null || client.level == null || client.hitResult == null || client.hitResult.getType() != HitResult.Type.BLOCK) {
 			if (!currentBlockName.isEmpty()) reset();
 			return;
@@ -41,9 +46,8 @@ public final class BlockTargetReader {
 		}
 
 		if (!spokenForCurrent
-				&& DawnAccessibilityClient.config().getCrosshairMode() == 1
-				&& DawnAccessibilityClient.config().isEnabled()
-				&& System.currentTimeMillis() - hoverStartedAtMs >= DawnAccessibilityClient.config().getBlockDelayMs()) {
+				&& config.getCrosshairMode() == 1
+				&& System.currentTimeMillis() - hoverStartedAtMs >= config.getBlockDelayMs()) {
 			spokenForCurrent = true;
 			DawnAccessibilityClient.speak(blockName);
 		}

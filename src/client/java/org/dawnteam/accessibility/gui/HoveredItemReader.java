@@ -17,7 +17,6 @@ public final class HoveredItemReader {
 	private String lastItemName = "";
 	private String currentItemName = "";
 	private long hoverStartedAtMs;
-	private long nameSpokenAtMs;
 	private long estimatedSpeechEndMs;
 	private boolean spokenForCurrentHover;
 	private boolean detailSpoken;
@@ -43,7 +42,6 @@ public final class HoveredItemReader {
 			lastItemName = itemName;
 			currentItemName = itemName;
 			hoverStartedAtMs = System.currentTimeMillis();
-			nameSpokenAtMs = 0;
 			estimatedSpeechEndMs = 0;
 			spokenForCurrentHover = false;
 			detailSpoken = false;
@@ -54,8 +52,6 @@ public final class HoveredItemReader {
 
 		if (!spokenForCurrentHover && elapsed >= cfg.getHoverDelayMs()) {
 			spokenForCurrentHover = true;
-			nameSpokenAtMs = now;
-			// Estimate speech duration: ~120ms per CJK char, ~80ms per Latin word
 			int rate = cfg.getSpeechRate();
 			double rateMultiplier = Math.max(0.3, 1.0 - rate * 0.08);
 			long estimatedMs = estimateSpeechDuration(itemName, rateMultiplier);
@@ -66,10 +62,8 @@ public final class HoveredItemReader {
 		if (!detailSpoken && cfg.isTooltipDetailEnabled() && spokenForCurrentHover) {
 			boolean shouldSpeak;
 			if (cfg.getTooltipDetailMode() == 1) {
-				// Sequential: delay starts AFTER estimated speech finishes
 				shouldSpeak = now >= estimatedSpeechEndMs + cfg.getTooltipDetailDelayMs();
 			} else {
-				// Independent: delay starts from hover
 				shouldSpeak = elapsed >= cfg.getHoverDelayMs() + cfg.getTooltipDetailDelayMs();
 			}
 			if (shouldSpeak) {
@@ -93,9 +87,7 @@ public final class HoveredItemReader {
 				latinCount++;
 			}
 		}
-		// Base overhead for TTS startup
 		long baseMs = 300;
-		// CJK ~180ms/char, Latin ~60ms/char at normal speed
 		long contentMs = (long) ((cjkCount * 180 + latinCount * 60) * rateMultiplier);
 		return Math.max(400, Math.min(baseMs + contentMs, 6000));
 	}
@@ -106,11 +98,9 @@ public final class HoveredItemReader {
 
 		StringBuilder sb = new StringBuilder();
 
-		// 1. Read enchantments explicitly from DataComponents
 		appendEnchantments(sb, stack.get(DataComponents.ENCHANTMENTS));
 		appendEnchantments(sb, stack.get(DataComponents.STORED_ENCHANTMENTS));
 
-		// 2. Read tooltip lines (lore, etc.) - skip enchantments since we already read them
 		var tooltipContext = net.minecraft.world.item.Item.TooltipContext.of(client.level);
 		var flag = new net.minecraft.world.item.TooltipFlag.Default(false, true);
 		var lines = stack.getTooltipLines(tooltipContext, client.player, flag);
@@ -122,7 +112,6 @@ public final class HoveredItemReader {
 			}
 		}
 
-		// 3. Append mod name
 		var id = BuiltInRegistries.ITEM.getKey(stack.getItem());
 		String namespace = id.getNamespace();
 		String modName = switch (namespace) {
@@ -162,7 +151,6 @@ public final class HoveredItemReader {
 	}
 
 	private boolean isEnchantmentLine(String line, ItemStack stack) {
-		// Check if this tooltip line matches any enchantment name to avoid duplication
 		ItemEnchantments enchants = stack.get(DataComponents.ENCHANTMENTS);
 		ItemEnchantments stored = stack.get(DataComponents.STORED_ENCHANTMENTS);
 		if (matchesEnchantments(line, enchants)) return true;
@@ -181,7 +169,7 @@ public final class HoveredItemReader {
 
 	public void reset() {
 		lastSlotId = -1; lastItemName = ""; currentItemName = "";
-		hoverStartedAtMs = 0L; nameSpokenAtMs = 0L; estimatedSpeechEndMs = 0L;
+		hoverStartedAtMs = 0L; estimatedSpeechEndMs = 0L;
 		spokenForCurrentHover = false; detailSpoken = false;
 	}
 

@@ -17,7 +17,6 @@ public abstract class TitleScreenMixin extends Screen {
 
 	@Inject(method = "init", at = @At("TAIL"))
 	private void dawnAccessibility$addButton(CallbackInfo ci) {
-		// Place button at bottom-left to avoid overlapping vanilla buttons
 		addRenderableWidget(Button.builder(
 				Component.translatable("screen.dawn_accessibility.title"),
 				b -> Minecraft.getInstance().setScreenAndShow(DawnClothConfigScreen.create((Screen)(Object)this))

@@ -146,14 +146,16 @@ public final class DawnClothConfigScreen {
 		InputConstants.Key currentKey = ((KeyMappingAccessor) mapping).dawnAccessibility$getKey();
 		category.addEntry(entry.startKeyCodeField(
 						Component.translatable(labelKey), currentKey)
-				.setDefaultValue(currentKey)
+				.setDefaultValue(mapping.getDefaultKey())
 				.setKeySaveConsumer(mapping::setKey)
 				.build());
 	}
 
 	public enum VoiceOption {
 		DEFAULT;
-		@Override public String toString() { return "默认 (Default)"; }
+		@Override public String toString() {
+			return Component.translatable("screen.dawn_accessibility.voice_default").getString();
+		}
 	}
 
 	public enum TooltipDetailMode {
@@ -162,7 +164,9 @@ public final class DawnClothConfigScreen {
 		TooltipDetailMode(int value) { this.value = value; }
 		public static TooltipDetailMode fromInt(int v) { return v == 1 ? SEQUENTIAL : INDEPENDENT; }
 		@Override public String toString() {
-			return switch (this) { case INDEPENDENT -> "独立"; case SEQUENTIAL -> "顺序"; };
+			return Component.translatable(this == INDEPENDENT
+					? "screen.dawn_accessibility.tooltip_mode_independent"
+					: "screen.dawn_accessibility.tooltip_mode_sequential").getString();
 		}
 	}
 
@@ -171,6 +175,13 @@ public final class DawnClothConfigScreen {
 		public final int value;
 		CrosshairMode(int value) { this.value = value; }
 		public static CrosshairMode fromInt(int v) { return switch (v) { case 0 -> OFF; case 1 -> AUTO; default -> MANUAL; }; }
-		@Override public String toString() { return switch (this) { case OFF -> "OFF"; case AUTO -> "AUTO"; case MANUAL -> "MANUAL"; }; }
+		@Override public String toString() {
+			String key = switch (this) {
+				case OFF -> "screen.dawn_accessibility.crosshair_mode_off";
+				case AUTO -> "screen.dawn_accessibility.crosshair_mode_auto";
+				case MANUAL -> "screen.dawn_accessibility.crosshair_mode_manual";
+			};
+			return Component.translatable(key).getString();
+		}
 	}
 }

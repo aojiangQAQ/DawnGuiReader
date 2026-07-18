@@ -35,7 +35,6 @@ public final class SystemTtsEngine implements TtsEngine {
 	private final List<Voice> voices;
 	private final Path windowsTtsScript;
 	private final AtomicLong speakGeneration = new AtomicLong();
-	private volatile Process currentProcess;
 	private volatile boolean available;
 	private volatile String availabilityMessage;
 
@@ -106,83 +105,107 @@ public final class SystemTtsEngine implements TtsEngine {
 		}
 	}
 
-	private void startWindowsProcess() {
+	private boolean startWindowsProcess() {
 		synchronized (windowsLock) {
+			if (windowsTtsScript == null) return false;
 			try {
 				ProcessBuilder builder = new ProcessBuilder(
 						"powershell.exe", "-NoLogo", "-NoProfile", "-NonInteractive",
 						"-ExecutionPolicy", "Bypass", "-File", windowsTtsScript.toString()
 				);
 				builder.redirectErrorStream(true);
-				windowsProcess = builder.start();
+				Process process = builder.start();
+				windowsProcess = process;
 				windowsStdin = new BufferedWriter(new OutputStreamWriter(
-						windowsProcess.getOutputStream(), StandardCharsets.UTF_8));
+						process.getOutputStream(), StandardCharsets.UTF_8));
 				Thread drainer = new Thread(() -> {
 					try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-							windowsProcess.getInputStream(), StandardCharsets.UTF_8))) {
+							process.getInputStream(), StandardCharsets.UTF_8))) {
 						while (reader.readLine() != null) { }
 					} catch (IOException ignored) {}
 				}, "Dawn TTS Drainer");
 				drainer.setDaemon(true);
 				drainer.start();
 				logger.info("Windows TTS persistent process started");
+				return true;
 			} catch (IOException exception) {
 				logger.warn("Failed to start Windows TTS process", exception);
 				windowsProcess = null;
 				windowsStdin = null;
+				return false;
 			}
 		}
 	}
 
-	private void sendWindowsCommand(String command) {
+	private boolean sendWindowsCommand(String command) {
 		synchronized (windowsLock) {
 			if (windowsStdin == null || windowsProcess == null || !windowsProcess.isAlive()) {
-				startWindowsProcess();
+				if (!startWindowsProcess()) return false;
 			}
-			if (windowsStdin != null) {
-				try {
-					windowsStdin.write(command);
-					windowsStdin.newLine();
-					windowsStdin.flush();
-				} catch (IOException e) {
-					logger.warn("Failed to send TTS command", e);
-					try { windowsStdin.close(); } catch (IOException ignored) {}
-					windowsStdin = null;
-				}
+			try {
+				windowsStdin.write(command);
+				windowsStdin.newLine();
+				windowsStdin.flush();
+				return true;
+			} catch (IOException exception) {
+				logger.warn("Failed to send TTS command", exception);
+				closeWindowsProcess();
+				return false;
 			}
 		}
+	}
+
+	private void closeWindowsProcess() {
+		if (windowsStdin != null) {
+			try { windowsStdin.close(); } catch (IOException ignored) { }
+		}
+		if (windowsProcess != null) windowsProcess.destroy();
+		windowsStdin = null;
+		windowsProcess = null;
 	}
 
 	@Override
 	public void speak(String text, TtsOptions options) {
-		if (!available) return;
-		if (platform == Platform.WINDOWS) {
-			// Protocol: rate|volume|voice|text
-			sendWindowsCommand(options.rate() + "|" + options.volume() + "|" + options.voiceIdOrBlank() + "|" + text);
-		} else {
-			long gen = speakGeneration.incrementAndGet();
-			executor.execute(() -> {
-				if (speakGeneration.get() != gen) return;
-				try {
-					List<String> command = commandForSpeech(text, options);
-					Process process = new ProcessBuilder(command).redirectErrorStream(true).start();
-					if (!process.waitFor(DEFAULT_TTS_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
-						process.destroyForcibly();
-					}
-				} catch (IOException | InterruptedException e) {
-					if (e instanceof InterruptedException) Thread.currentThread().interrupt();
+		if (text == null || text.isBlank()) return;
+		if (!available) {
+			speakWithMinecraftNarrator(text);
+			return;
+		}
+
+		long generation = speakGeneration.incrementAndGet();
+		executor.execute(() -> {
+			if (speakGeneration.get() != generation) return;
+			if (platform == Platform.WINDOWS) {
+				String singleLineText = text.replace('\r', ' ').replace('\n', ' ');
+				String command = options.rate() + "|" + options.volume() + "|"
+						+ options.voiceIdOrBlank() + "|" + singleLineText;
+				if (!sendWindowsCommand(command)) speakWithMinecraftNarrator(text);
+				return;
+			}
+
+			try {
+				List<String> command = commandForSpeech(text, options);
+				Process process = new ProcessBuilder(command).redirectErrorStream(true).start();
+				boolean finished = process.waitFor(DEFAULT_TTS_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+				if (!finished) {
+					process.destroyForcibly();
+					speakWithMinecraftNarrator(text);
+				} else if (process.exitValue() != 0) {
 					speakWithMinecraftNarrator(text);
 				}
-			});
-		}
+			} catch (IOException exception) {
+				speakWithMinecraftNarrator(text);
+			} catch (InterruptedException exception) {
+				Thread.currentThread().interrupt();
+			}
+		});
 	}
 
 	@Override
 	public void stop() {
+		speakGeneration.incrementAndGet();
 		if (platform == Platform.WINDOWS) {
-			sendWindowsCommand("STOP");
-		} else {
-			speakGeneration.incrementAndGet();
+			executor.execute(() -> sendWindowsCommand("STOP"));
 		}
 	}
 
@@ -225,7 +248,6 @@ public final class SystemTtsEngine implements TtsEngine {
 
 	private List<String> commandForSpeech(String text, TtsOptions options) {
 		String voice = options.voiceIdOrBlank();
-		String rate = Integer.toString(options.rate());
 		return switch (platform) {
 			case MACOS -> {
 				List<String> command = new ArrayList<>();

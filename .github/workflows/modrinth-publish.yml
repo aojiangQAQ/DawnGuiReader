@@ -43,8 +43,9 @@ jobs:
             26.1
             26.1.1
             26.1.2
+            26.2
           loaders: fabric
-          name: "DawnGuiReader v${{ github.event.release.tag_name }}"
+          name: "DawnGuiReader ${{ github.event.release.tag_name }}"
           version: ${{ github.event.release.tag_name }}
-          files: build/libs/dawn-gui-reader-*.jar
+          files: build/libs/DawnGuiReader-*.jar
           build-args: "-PlocalMavenDir=local-maven"

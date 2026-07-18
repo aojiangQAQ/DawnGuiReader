@@ -4,6 +4,7 @@
   "version": "${version}",
   "name": "DawnGuiReader",
   "description": "A client-side accessibility reader for blind and low-vision Minecraft players. Reads container items, hotbar, crosshair blocks, and GUI text via system TTS.",
+  "icon": "assets/dawn_accessibility/icon.png",
   "authors": [
     "曙光团队 - 鳌江"
   ],

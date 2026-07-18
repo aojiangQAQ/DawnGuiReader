@@ -104,24 +104,35 @@ public final class DawnAccessibilityClient implements ClientModInitializer {
 				blockTargetReader.reset();
 			}
 
-			// Container reading - works for ALL AbstractContainerScreen subclasses
-			var screen = MinecraftScreenCompat.currentScreen(client);
+			var screen = config.isEnabled()
+					&& (config.isContainerReaderEnabled() || config.isGuiTextReaderEnabled())
+					? MinecraftScreenCompat.currentScreen(client)
+					: null;
 			if (screen instanceof EnchantmentScreen enchantScreen) {
-				hoveredItemReader.reset();
-				var w = client.getWindow();
-				int mouseX = (int) (client.mouseHandler.xpos() * screen.width / w.getWidth());
-				int mouseY = (int) (client.mouseHandler.ypos() * screen.height / w.getHeight());
-				enchantmentScreenReader.update(enchantScreen, mouseX, mouseY);
+				if (config.isContainerReaderEnabled()) {
+					hoveredItemReader.reset();
+					var w = client.getWindow();
+					int mouseX = (int) (client.mouseHandler.xpos() * screen.width / w.getWidth());
+					int mouseY = (int) (client.mouseHandler.ypos() * screen.height / w.getHeight());
+					enchantmentScreenReader.update(enchantScreen, mouseX, mouseY);
+				} else {
+					hoveredItemReader.reset();
+					enchantmentScreenReader.reset();
+				}
 			} else if (screen instanceof AbstractContainerScreen containerScreen) {
 				enchantmentScreenReader.reset();
-				Slot computed = findSlotAt(containerScreen, client);
-				hoveredItemReader.update(computed);
+				if (config.isContainerReaderEnabled()) {
+					Slot computed = findSlotAt(containerScreen, client);
+					hoveredItemReader.update(computed);
+				} else {
+					hoveredItemReader.reset();
+				}
 			} else {
 				hoveredItemReader.reset();
 				enchantmentScreenReader.reset();
 			}
 
-			guiTextReader.update(client);
+			guiTextReader.update(client, screen);
 		});
 	}
 
