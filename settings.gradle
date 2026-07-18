@@ -1,8 +1,11 @@
 pluginManagement {
+	def localMavenPath = providers.environmentVariable('LOCAL_MAVEN_DIR')
+			.orElse(providers.gradleProperty('localMavenDir'))
+			.getOrElse('local-maven')
 	repositories {
 		maven {
 			name = 'LocalDDriveMaven'
-			url = uri('D:/local-maven')
+			url = uri(localMavenPath)
 		}
 		maven {
 			name = 'AliyunGradlePlugin'
@@ -22,10 +25,13 @@ pluginManagement {
 }
 
 dependencyResolutionManagement {
+	def localMavenPath = providers.environmentVariable('LOCAL_MAVEN_DIR')
+			.orElse(providers.gradleProperty('localMavenDir'))
+			.getOrElse('local-maven')
 	repositories {
 		maven {
 			name = 'LocalDDriveMaven'
-			url = uri('D:/local-maven')
+			url = uri(localMavenPath)
 		}
 		maven {
 			name = 'AliyunPublic'
