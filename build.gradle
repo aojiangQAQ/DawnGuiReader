@@ -1,6 +1,7 @@
 plugins {
 	id 'net.fabricmc.fabric-loom' version "${loom_version}"
 	id 'maven-publish'
+	id 'com.modrinth.minotaur' version '2.9.0'
 }
 
 version = project.mod_version
@@ -94,5 +95,27 @@ publishing {
 		create("mavenJava", MavenPublication) {
 			from components.java
 		}
+	}
+}
+
+modrinth {
+	token = System.getenv('MODRINTH_TOKEN')
+	projectId = 'bJNYg6Np'
+	versionNumber = project.mod_version
+	versionName = "DawnGuiReader v${project.mod_version}"
+	versionType = 'release'
+	uploadFile = tasks.named('jar')
+	gameVersions = ['26.1', '26.1.1', '26.1.2', '26.2']
+	loaders = ['fabric']
+	changelog = '''
+- Added Minecraft 26.2 support while retaining Minecraft 26.1.x compatibility.
+- Improved TTS threading and fallback behavior.
+- Optimized GUI reading and disabled-state tick overhead.
+- Added bilingual documentation and a new mod icon.
+- Thanks to @S-H-Go for the Minecraft 26.2 compatibility contribution.
+'''.stripIndent().trim()
+	dependencies {
+		required.project 'fabric-api'
+		required.project 'cloth-config'
 	}
 }

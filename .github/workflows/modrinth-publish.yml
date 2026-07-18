@@ -3,6 +3,7 @@
 on:
   release:
     types: [published]
+  workflow_dispatch:
 
 jobs:
   publish:
@@ -36,16 +37,6 @@ jobs:
             "https://repo1.maven.org/maven2/it/unimi/dsi/fastutil/8.5.18/fastutil-8.5.18.jar"
 
       - name: Publish to Modrinth
-        uses: modrinth/auto-publish@v1
-        with:
-          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
-          game-versions: |
-            26.1
-            26.1.1
-            26.1.2
-            26.2
-          loaders: fabric
-          name: "DawnGuiReader ${{ github.event.release.tag_name }}"
-          version: ${{ github.event.release.tag_name }}
-          files: build/libs/DawnGuiReader-*.jar
-          build-args: "-PlocalMavenDir=local-maven"
+        run: ./gradlew modrinth -PlocalMavenDir=local-maven
+        env:
+          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
