@@ -1,4 +1,4 @@
-﻿name: Publish to Modrinth
+name: Publish to Modrinth
 
 on:
   release:
@@ -12,31 +12,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up JDK 25
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          java-version: "25"
+          java-version: "17"
           distribution: temurin
 
-      - name: Cache local Maven dependencies
-        uses: actions/cache@v4
-        with:
-          path: local-maven
-          key: local-maven-deps-v1
-
-      - name: Fetch local Maven dependencies
-        run: |
-          mkdir -p local-maven/com/github/oshi/oshi-core/6.9.0
-          mkdir -p local-maven/io/netty/netty-transport-classes-epoll/4.2.7.Final
-          mkdir -p local-maven/it/unimi/dsi/fastutil/8.5.18
-          curl -sL -o local-maven/com/github/oshi/oshi-core/6.9.0/oshi-core-6.9.0.jar \
-            "https://repo1.maven.org/maven2/com/github/oshi/oshi-core/6.9.0/oshi-core-6.9.0.jar"
-          curl -sL -o local-maven/io/netty/netty-transport-classes-epoll/4.2.7.Final/netty-transport-classes-epoll-4.2.7.Final.jar \
-            "https://repo1.maven.org/maven2/io/netty/netty-transport-classes-epoll/4.2.7.Final/netty-transport-classes-epoll-4.2.7.Final.jar"
-          curl -sL -o local-maven/it/unimi/dsi/fastutil/8.5.18/fastutil-8.5.18.jar \
-            "https://repo1.maven.org/maven2/it/unimi/dsi/fastutil/8.5.18/fastutil-8.5.18.jar"
-
       - name: Publish to Modrinth
-        run: ./gradlew modrinth -PlocalMavenDir=local-maven
+        run: ./gradlew modrinth
         env:
           MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
