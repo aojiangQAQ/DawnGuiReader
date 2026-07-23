@@ -8,7 +8,7 @@
   <img src="src/main/resources/assets/dawn_accessibility/icon.png" alt="DawnGuiReader 图标" width="128">
 </p>
 
-![Minecraft](https://img.shields.io/badge/Minecraft-26.1--26.2-green)
+![Minecraft](https://img.shields.io/badge/Minecraft-1.20.1%20%7C%201.21.x%20%7C%2026.1--26.2-green)
 ![Fabric](https://img.shields.io/badge/Fabric-0.19.2-blue)
 ![Cloth Config](https://img.shields.io/badge/Cloth_Config-required-orange)
 ![Version](https://img.shields.io/badge/version-1.3.0-6f42c1)
@@ -19,9 +19,24 @@
 ## v1.3.0 更新
 
 - 新增 Minecraft 26.2 支持，同时保留 Minecraft 26.1.x 兼容性。
+- 新增 Minecraft 1.20.1、1.21/1.21.1、1.21.4 和 1.21.8 的独立兼容构建。
 - 增加跨 26.1/26.2 的当前界面访问兼容层。
 - 更新 Cloth Config、构建配置和 Modrinth 发布信息。
 - 感谢 [@S-H-Go](https://github.com/S-H-Go) 提交 26.2 兼容支持。
+
+## 支持版本与下载
+
+Minecraft 各版本的 GUI 和映射 API 差异较大，因此旧版本使用独立构建。请下载与游戏版本完全对应的 JAR，不要混用。
+
+| Minecraft | 下载文件 | Java |
+|---|---|---|
+| 26.1.x、26.2.x | `DawnGuiReader-1.3.0.jar` | 25+ |
+| 1.21.8 | `DawnGuiReader-1.3.0+mc1.21.8.jar` | 21+ |
+| 1.21.4 | `DawnGuiReader-1.3.0+mc1.21.4.jar` | 21+ |
+| 1.21、1.21.1 | `DawnGuiReader-1.3.0+mc1.21.1.jar` | 21+ |
+| 1.20.1 | `DawnGuiReader-1.3.0+mc1.20.1.jar` | 17+ |
+
+下载位置：[GitHub Releases](https://github.com/aojiangQAQ/DawnGuiReader/releases) ｜ [Modrinth Versions](https://modrinth.com/mod/dawnguireader/versions)
 
 ## 功能
 
@@ -41,17 +56,17 @@
 
 | 前置 | 要求 |
 |---|---|
-| Minecraft | 26.1.x 或 26.2.x |
-| Fabric Loader | 0.19.2+ |
+| Minecraft | 1.20.1、1.21/1.21.1、1.21.4、1.21.8、26.1.x 或 26.2.x |
+| Fabric Loader | 对应构建所要求的版本 |
 | Fabric API | 对应 Minecraft 版本 |
 | Cloth Config | 对应 Minecraft 版本，必选 |
-| Java | 25+ |
+| Java | 1.20.1 使用 17+；1.21.x 使用 21+；26.x 使用 25+ |
 
 ## 安装
 
 1. 安装 [Fabric Loader](https://fabricmc.net/use/installer/)。
 2. 将 [Fabric API](https://modrinth.com/mod/fabric-api) 和 [Cloth Config](https://modrinth.com/mod/cloth-config) 放入 `mods/`。
-3. 下载并将 `DawnGuiReader-1.3.0.jar` 放入 `mods/`。
+3. 从上方版本表下载与 Minecraft 完全对应的 DawnGuiReader JAR，并放入 `mods/`。
 4. 启动游戏，在主界面左下角或暂停菜单中打开 **Dawn 无障碍**。
 5. 总开关默认关闭；请在设置中手动启用需要的朗读功能。
 
@@ -88,7 +103,7 @@ Windows 首次运行时会在 `.minecraft/config/` 中生成 `dawn-tts-speak.ps1
 
 ## 本地构建
 
-需要 JDK 25。Gradle Wrapper 会负责使用项目指定的 Gradle 版本。
+主分支需要 JDK 25。旧版本分支分别使用 JDK 21 或 JDK 17；Gradle Wrapper 会负责使用该分支指定的 Gradle 版本。
 
 ```powershell
 git clone https://github.com/aojiangQAQ/DawnGuiReader.git
@@ -97,6 +112,8 @@ cd DawnGuiReader
 ```
 
 产物位于 `build/libs/DawnGuiReader-1.3.0.jar`。
+
+旧版本源代码位于 `codex/mc-1.21.8`、`codex/mc-1.21.4`、`codex/mc-1.21.1` 和 `codex/mc-1.20.1` 分支。
 
 ## 贡献
 

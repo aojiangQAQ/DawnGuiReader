@@ -8,7 +8,7 @@
   <img src="src/main/resources/assets/dawn_accessibility/icon.png" alt="DawnGuiReader icon" width="128">
 </p>
 
-![Minecraft](https://img.shields.io/badge/Minecraft-26.1--26.2-green)
+![Minecraft](https://img.shields.io/badge/Minecraft-1.20.1%20%7C%201.21.x%20%7C%2026.1--26.2-green)
 ![Fabric](https://img.shields.io/badge/Fabric-0.19.2-blue)
 ![Cloth Config](https://img.shields.io/badge/Cloth_Config-required-orange)
 ![Version](https://img.shields.io/badge/version-1.3.0-6f42c1)
@@ -19,9 +19,24 @@
 ## What’s new in v1.3.0
 
 - Added Minecraft 26.2 support while retaining compatibility with Minecraft 26.1.x.
+- Added dedicated compatibility builds for Minecraft 1.20.1, 1.21/1.21.1, 1.21.4, and 1.21.8.
 - Added a compatibility layer for accessing the current screen across 26.1 and 26.2.
 - Updated Cloth Config, build configuration, and Modrinth publishing metadata.
 - Thanks to [@S-H-Go](https://github.com/S-H-Go) for contributing Minecraft 26.2 compatibility.
+
+## Supported versions and downloads
+
+Minecraft GUI and mapping APIs differ substantially between releases, so older versions use dedicated builds. Download the JAR that exactly matches your game version.
+
+| Minecraft | Download file | Java |
+|---|---|---|
+| 26.1.x, 26.2.x | `DawnGuiReader-1.3.0.jar` | 25+ |
+| 1.21.8 | `DawnGuiReader-1.3.0+mc1.21.8.jar` | 21+ |
+| 1.21.4 | `DawnGuiReader-1.3.0+mc1.21.4.jar` | 21+ |
+| 1.21, 1.21.1 | `DawnGuiReader-1.3.0+mc1.21.1.jar` | 21+ |
+| 1.20.1 | `DawnGuiReader-1.3.0+mc1.20.1.jar` | 17+ |
+
+Downloads: [GitHub Releases](https://github.com/aojiangQAQ/DawnGuiReader/releases) | [Modrinth Versions](https://modrinth.com/mod/dawnguireader/versions)
 
 ## Features
 
@@ -41,17 +56,17 @@
 
 | Dependency | Requirement |
 |---|---|
-| Minecraft | 26.1.x or 26.2.x |
-| Fabric Loader | 0.19.2+ |
+| Minecraft | 1.20.1, 1.21/1.21.1, 1.21.4, 1.21.8, 26.1.x, or 26.2.x |
+| Fabric Loader | Version required by the matching build |
 | Fabric API | Version matching Minecraft |
 | Cloth Config | Version matching Minecraft; required |
-| Java | 25+ |
+| Java | 17+ for 1.20.1; 21+ for 1.21.x; 25+ for 26.x |
 
 ## Installation
 
 1. Install [Fabric Loader](https://fabricmc.net/use/installer/).
 2. Put [Fabric API](https://modrinth.com/mod/fabric-api) and [Cloth Config](https://modrinth.com/mod/cloth-config) in `mods/`.
-3. Download and put `DawnGuiReader-1.3.0.jar` in `mods/`.
+3. Download the DawnGuiReader JAR that exactly matches your Minecraft version from the table above and put it in `mods/`.
 4. Start the game and open **Dawn Accessibility** from the bottom-left of the title screen or from the pause menu.
 5. The master reader toggle is disabled by default. Enable the reading features you want in settings.
 
@@ -88,7 +103,7 @@ On first use, Windows creates `dawn-tts-speak.ps1` under `.minecraft/config/`.
 
 ## Building locally
 
-JDK 25 is required. The Gradle Wrapper provides the project’s Gradle version.
+The main branch requires JDK 25. Legacy branches use JDK 21 or JDK 17 as listed above; the Gradle Wrapper provides the Gradle version selected by each branch.
 
 ```powershell
 git clone https://github.com/aojiangQAQ/DawnGuiReader.git
@@ -97,6 +112,8 @@ cd DawnGuiReader
 ```
 
 The output is written to `build/libs/DawnGuiReader-1.3.0.jar`.
+
+Legacy source branches are `codex/mc-1.21.8`, `codex/mc-1.21.4`, `codex/mc-1.21.1`, and `codex/mc-1.20.1`.
 
 ## Contributing
 
