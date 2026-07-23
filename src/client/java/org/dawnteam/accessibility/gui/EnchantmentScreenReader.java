@@ -85,7 +85,7 @@ public final class EnchantmentScreenReader {
 			var registry = client.level.registryAccess().registryOrThrow(Registries.ENCHANTMENT);
 			var holder = registry.getHolder(clue);
 			if (holder.isPresent()) {
-				Component fullName = Enchantment.getFullname(holder.get(), level);
+				Component fullName = holder.get().value().getFullname(level);
 				if (fullName != null) {
 					return fullName.getString().trim();
 				}

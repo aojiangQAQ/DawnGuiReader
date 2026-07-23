@@ -1,13 +1,9 @@
 package org.dawnteam.accessibility.gui;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.item.enchantment.ItemEnchantments;
 import org.dawnteam.accessibility.DawnAccessibilityClient;
 
 import java.util.Optional;
@@ -98,15 +94,11 @@ public final class HoveredItemReader {
 
 		StringBuilder sb = new StringBuilder();
 
-		appendEnchantments(sb, stack.get(DataComponents.ENCHANTMENTS));
-		appendEnchantments(sb, stack.get(DataComponents.STORED_ENCHANTMENTS));
-
-		var tooltipContext = net.minecraft.world.item.Item.TooltipContext.of(client.level);
-		var flag = new net.minecraft.world.item.TooltipFlag.Default(false, true);
-		var lines = stack.getTooltipLines(tooltipContext, client.player, flag);
+		var flag = new net.minecraft.world.item.TooltipFlag.Default(false, false);
+		var lines = stack.getTooltipLines(client.player, flag);
 		for (int i = 1; i < lines.size(); i++) {
 			String t = lines.get(i).getString().trim();
-			if (!t.isEmpty() && !isEnchantmentLine(t, stack)) {
+			if (!t.isEmpty()) {
 				if (sb.length() > 0) sb.append(", ");
 				sb.append(t);
 			}
@@ -132,39 +124,6 @@ public final class HoveredItemReader {
 		if (sb.length() > 0) {
 			DawnAccessibilityClient.speak(sb.toString());
 		}
-	}
-
-	private void appendEnchantments(StringBuilder sb, ItemEnchantments enchants) {
-		if (enchants == null || enchants.size() == 0) return;
-		for (var entry : enchants.entrySet()) {
-			var holder = entry.getKey();
-			int level = entry.getIntValue();
-			Component name = Enchantment.getFullname(holder, level);
-			if (name != null) {
-				String text = name.getString().trim();
-				if (!text.isEmpty()) {
-					if (sb.length() > 0) sb.append(", ");
-					sb.append(text);
-				}
-			}
-		}
-	}
-
-	private boolean isEnchantmentLine(String line, ItemStack stack) {
-		ItemEnchantments enchants = stack.get(DataComponents.ENCHANTMENTS);
-		ItemEnchantments stored = stack.get(DataComponents.STORED_ENCHANTMENTS);
-		if (matchesEnchantments(line, enchants)) return true;
-		if (matchesEnchantments(line, stored)) return true;
-		return false;
-	}
-
-	private boolean matchesEnchantments(String line, ItemEnchantments enchants) {
-		if (enchants == null) return false;
-		for (var entry : enchants.entrySet()) {
-			Component name = Enchantment.getFullname(entry.getKey(), entry.getIntValue());
-			if (name != null && line.equals(name.getString().trim())) return true;
-		}
-		return false;
 	}
 
 	public void reset() {
