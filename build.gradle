@@ -38,11 +38,6 @@ repositories {
 	mavenCentral()
 }
 
-configurations.configureEach {
-	exclude group: "com.github.oshi", module: "oshi-core"
-	exclude group: "io.netty", module: "netty-transport-classes-epoll"
-}
-
 loom {
 	splitEnvironmentSourceSets()
 
@@ -60,10 +55,8 @@ dependencies {
 	implementation "net.fabricmc.fabric-api:fabric-api-base:${project.fabric_api_base_version}"
 	implementation "net.fabricmc.fabric-api:fabric-lifecycle-events-v1:${project.fabric_lifecycle_events_version}"
 	implementation "net.fabricmc.fabric-api:fabric-key-mapping-api-v1:${project.fabric_key_mapping_version}"
+	runtimeOnly "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 	implementation "me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}"
-	clientCompileOnly files("${localMavenDir}/com/github/oshi/oshi-core/6.9.0/oshi-core-6.9.0.jar")
-	clientCompileOnly files("${localMavenDir}/io/netty/netty-transport-classes-epoll/4.2.7.Final/netty-transport-classes-epoll-4.2.7.Final.jar")
-	clientCompileOnly files("${localMavenDir}/it/unimi/dsi/fastutil/8.5.18/fastutil-8.5.18.jar")
 }
 
 processResources {
@@ -105,14 +98,25 @@ modrinth {
 	versionName = "DawnGuiReader v${project.mod_version}"
 	versionType = 'release'
 	uploadFile = tasks.named('jar')
-	gameVersions = ['26.1', '26.1.1', '26.1.2', '26.2']
+	gameVersions = ['26.3']
 	loaders = ['fabric']
 	changelog = '''
-- Added Minecraft 26.2 support while retaining Minecraft 26.1.x compatibility.
-- Improved TTS threading and fallback behavior.
-- Optimized GUI reading and disabled-state tick overhead.
-- Added bilingual documentation and a new mod icon.
-- Thanks to @S-H-Go for the Minecraft 26.2 compatibility contribution.
+## English
+- Added a dedicated Minecraft 26.3 Fabric build.
+- Updated input handling for Minecraft's SDL backend.
+- Fixed short key presses being missed, including shortcuts inside GUIs.
+- Requires Java 25, Fabric Loader 0.19.5+, Fabric API for 26.3, and Cloth Config 26.3.159+ (Fabric).
+- Existing builds for 26.1/26.2, 1.21.x, and 1.20.1 remain available separately. Do not use this JAR with those versions.
+
+Validated client startup, settings at 4x GUI scale, keyboard/mouse GUI shortcuts, press/repeat handling, and rebinding. A full regression of in-world speech scenarios has not yet been completed.
+
+## 简体中文
+- 新增 Minecraft 26.3 专用 Fabric 构建，适配 SDL 输入后端。
+- 修复快速短按可能被遗漏的问题；GUI 内可使用键盘和鼠标快捷键，长按不会重复触发。
+- 需要 Java 25、Fabric Loader 0.19.5+、26.3 对应的 Fabric API 和 Cloth Config 26.3.159+（Fabric）。
+- 26.1/26.2、1.21.x 和 1.20.1 的旧构建继续保留，请勿混用 JAR。
+
+已验证客户端启动、4x GUI 缩放设置页、GUI 内键鼠快捷键、短按/长按和重新绑定；世界内全部朗读场景尚未完成完整回归。
 '''.stripIndent().trim()
 	dependencies {
 		required.project 'fabric-api'

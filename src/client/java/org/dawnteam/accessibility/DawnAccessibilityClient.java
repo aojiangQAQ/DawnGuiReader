@@ -18,14 +18,12 @@ import org.dawnteam.accessibility.gui.GuiTextReader;
 import org.dawnteam.accessibility.gui.HotbarItemReader;
 import org.dawnteam.accessibility.gui.HoveredItemReader;
 import org.dawnteam.accessibility.gui.HoveredTextReader;
-import org.dawnteam.accessibility.mixin.KeyMappingAccessor;
 import org.dawnteam.accessibility.mixin.AbstractContainerScreenAccessor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.world.inventory.Slot;
 import org.dawnteam.accessibility.tts.SystemTtsEngine;
 import org.dawnteam.accessibility.tts.TtsEngine;
 import org.dawnteam.accessibility.tts.TtsOptions;
-import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +45,7 @@ public final class DawnAccessibilityClient implements ClientModInitializer {
 	private static KeyMapping crosshairReadKey;
 	private static final KeyMapping.Category KEY_CATEGORY = KeyMapping.Category.register(Identifier.fromNamespaceAndPath(MOD_ID, "accessibility"));
 
-	private static boolean toggleWasDown, repeatWasDown, crosshairWasDown;
+	private static int toggleClicks, repeatClicks, crosshairClicks;
 
 	@Override
 	public void onInitializeClient() {
@@ -68,33 +66,18 @@ public final class DawnAccessibilityClient implements ClientModInitializer {
 	private static void registerKeyBindings() {
 		toggleReaderKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
 				"key.dawn_accessibility.toggle_reader",
-				InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, KEY_CATEGORY));
+				InputConstants.Type.KEYBOARD, InputConstants.UNKNOWN.getValue(), KEY_CATEGORY));
 		repeatItemKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
 				"key.dawn_accessibility.repeat_item",
-				InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, KEY_CATEGORY));
+				InputConstants.Type.KEYBOARD, InputConstants.UNKNOWN.getValue(), KEY_CATEGORY));
 		crosshairReadKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
 				"key.dawn_accessibility.crosshair_read",
-				InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, KEY_CATEGORY));
+				InputConstants.Type.KEYBOARD, InputConstants.UNKNOWN.getValue(), KEY_CATEGORY));
 	}
 
 	private static void registerTickHandler() {
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
-			Window window = client.getWindow();
-
-			if (handleKey(toggleReaderKey, window, toggleWasDown)) {
-				config.setEnabled(!config.isEnabled());
-				config.save();
-				showStatus(client, config.isEnabled()
-						? "message.dawn_accessibility.reader_enabled"
-						: "message.dawn_accessibility.reader_disabled");
-			}
-			toggleWasDown = isKeyDown(toggleReaderKey, window);
-
-			if (handleKey(repeatItemKey, window, repeatWasDown)) repeatHoveredItem();
-			repeatWasDown = isKeyDown(repeatItemKey, window);
-
-			if (handleKey(crosshairReadKey, window, crosshairWasDown)) blockTargetReader.readNow();
-			crosshairWasDown = isKeyDown(crosshairReadKey, window);
+			handleKeyBindings(client);
 
 			if (client.player != null) {
 				hotbarItemReader.update(client.player.getMainHandItem(), client.player.getInventory().getSelectedSlot());
@@ -136,12 +119,28 @@ public final class DawnAccessibilityClient implements ClientModInitializer {
 		});
 	}
 
-	private static boolean isKeyDown(KeyMapping mapping, Window window) {
-		int key = ((KeyMappingAccessor) mapping).dawnAccessibility$getKey().getValue();
-		return key != GLFW.GLFW_KEY_UNKNOWN && InputConstants.isKeyDown(window, key);
+	public static void onInputPress(long windowHandle, InputConstants.Key key) {
+		if (toggleReaderKey == null || windowHandle == 0) return;
+		Window window = Minecraft.getInstance().getWindow();
+		if (windowHandle != window.handle() || !window.isFocused()) return;
+		if (toggleReaderKey.matches(key)) toggleClicks++;
+		if (repeatItemKey.matches(key)) repeatClicks++;
+		if (crosshairReadKey.matches(key)) crosshairClicks++;
 	}
-	private static boolean handleKey(KeyMapping mapping, Window window, boolean wasDown) {
-		return isKeyDown(mapping, window) && !wasDown;
+
+	private static void handleKeyBindings(Minecraft client) {
+		int toggles = toggleClicks, repeats = repeatClicks, crosshairReads = crosshairClicks;
+		toggleClicks = repeatClicks = crosshairClicks = 0;
+		if (!client.getWindow().isFocused()) return;
+		for (int i = 0; i < toggles; i++) {
+			config.setEnabled(!config.isEnabled());
+			config.save();
+			showStatus(client, config.isEnabled()
+					? "message.dawn_accessibility.reader_enabled"
+					: "message.dawn_accessibility.reader_disabled");
+		}
+		for (int i = 0; i < repeats; i++) repeatHoveredItem();
+		for (int i = 0; i < crosshairReads; i++) blockTargetReader.readNow();
 	}
 	private static void showStatus(Minecraft client, String key) {
 		if (client.player != null) client.player.sendOverlayMessage(Component.translatable(key));

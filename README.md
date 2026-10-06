@@ -8,13 +8,22 @@
   <img src="src/main/resources/assets/dawn_accessibility/icon.png" alt="DawnGuiReader 图标" width="128">
 </p>
 
-![Minecraft](https://img.shields.io/badge/Minecraft-1.20.1%20%7C%201.21.x%20%7C%2026.1--26.2-green)
-![Fabric](https://img.shields.io/badge/Fabric-0.19.2-blue)
+![Minecraft](https://img.shields.io/badge/Minecraft-1.20.1%20%7C%201.21.x%20%7C%2026.1--26.3-green)
+![Fabric](https://img.shields.io/badge/Fabric-0.19.5-blue)
 ![Cloth Config](https://img.shields.io/badge/Cloth_Config-required-orange)
-![Version](https://img.shields.io/badge/version-1.3.0-6f42c1)
+![Version](https://img.shields.io/badge/version-1.3.0%2Bmc26.3-6f42c1)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
 > DawnGuiReader 是一个面向盲人及低视力玩家的 Minecraft Fabric 客户端无障碍模组。它可以朗读容器物品、快捷栏物品、准星所指方块和 GUI 文本，并通过系统 TTS 在 Windows、macOS 和 Linux 上工作。
+
+## Minecraft 26.3 专用构建
+
+本分支提供 Minecraft 26.3 专用版本 `1.3.0+mc26.3`。26.3 使用 SDL 窗口与输入后端，因此需要独立 JAR，不能使用原来的 26.1/26.2 包。
+
+- 适配 SDL 键盘与鼠标快捷键，保留 GUI 内使用和默认未绑定设置。
+- 使用输入事件捕获快捷键，避免快速短按被 tick 轮询漏掉；长按不会连续触发。
+- 使用 Fabric Loader 0.19.5+、Fabric API 0.161.0+26.3 和 Cloth Config 26.3.159（Fabric）。
+- 需要 Java 25；原有 26.1/26.2 和旧版本构建继续独立维护。
 
 ## v1.3.0 更新
 
@@ -30,6 +39,7 @@ Minecraft 各版本的 GUI 和映射 API 差异较大，因此旧版本使用独
 
 | Minecraft | 下载文件 | Java |
 |---|---|---|
+| 26.3 | [DawnGuiReader-1.3.0+mc26.3.jar](https://github.com/aojiangQAQ/DawnGuiReader/releases/download/v1.3.0-mc26.3/DawnGuiReader-1.3.0%2Bmc26.3.jar) | 25+ |
 | 26.1.x、26.2.x | `DawnGuiReader-1.3.0.jar` | 25+ |
 | 1.21.8 | `DawnGuiReader-1.3.0+mc1.21.8.jar` | 21+ |
 | 1.21.4 | `DawnGuiReader-1.3.0+mc1.21.4.jar` | 21+ |
@@ -56,7 +66,7 @@ Minecraft 各版本的 GUI 和映射 API 差异较大，因此旧版本使用独
 
 | 前置 | 要求 |
 |---|---|
-| Minecraft | 1.20.1、1.21/1.21.1、1.21.4、1.21.8、26.1.x 或 26.2.x |
+| Minecraft | 1.20.1、1.21/1.21.1、1.21.4、1.21.8、26.1.x、26.2.x 或 26.3 |
 | Fabric Loader | 对应构建所要求的版本 |
 | Fabric API | 对应 Minecraft 版本 |
 | Cloth Config | 对应 Minecraft 版本，必选 |
@@ -103,15 +113,13 @@ Windows 首次运行时会在 `.minecraft/config/` 中生成 `dawn-tts-speak.ps1
 
 ## 本地构建
 
-主分支需要 JDK 25。旧版本分支分别使用 JDK 21 或 JDK 17；Gradle Wrapper 会负责使用该分支指定的 Gradle 版本。
+本 26.3 分支需要 JDK 25，使用 Loom 1.17 和 Gradle 9.6。旧版本分支分别使用 JDK 21 或 JDK 17；Gradle Wrapper 会负责使用该分支指定的 Gradle 版本。在对应源码目录中执行：
 
 ```powershell
-git clone https://github.com/aojiangQAQ/DawnGuiReader.git
-cd DawnGuiReader
 ./gradlew.bat build
 ```
 
-产物位于 `build/libs/DawnGuiReader-1.3.0.jar`。
+本分支产物位于 `build/libs/DawnGuiReader-1.3.0+mc26.3.jar`，仅适用于 Minecraft 26.3。
 
 旧版本源代码位于 `codex/mc-1.21.8`、`codex/mc-1.21.4`、`codex/mc-1.21.1` 和 `codex/mc-1.20.1` 分支。
 
